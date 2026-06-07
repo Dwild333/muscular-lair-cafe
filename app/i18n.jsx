@@ -90,6 +90,22 @@
     "Add a flavor, then Enter": "พิมพ์รสชาติแล้วกด Enter",
     "With flavor options, this becomes a tap-to-customise item at the register.": "เมื่อมีตัวเลือกรสชาติ รายการนี้จะกลายเป็นแบบปรับแต่งได้ที่หน้าขาย",
     "Leave as one-off": "ใช้ครั้งเดียว",
+    // auth + settings + CRUD
+    "Shop password": "รหัสผ่านร้าน", "Log in": "เข้าสู่ระบบ", "Signing in…": "กำลังเข้าสู่ระบบ…",
+    "Log out": "ออกจากระบบ", "Wrong password — try again.": "รหัสผ่านไม่ถูกต้อง — ลองอีกครั้ง",
+    "Could not connect.": "เชื่อมต่อไม่ได้", "Something went wrong": "เกิดข้อผิดพลาด",
+    "Changes are saved to the cloud and sync to every device.": "การเปลี่ยนแปลงถูกบันทึกบนคลาวด์และซิงค์ทุกอุปกรณ์",
+    "Staff": "พนักงาน", "Add or remove who can be tapped at the counter.": "เพิ่มหรือลบผู้ที่เลือกได้ที่หน้าเคาน์เตอร์",
+    "Add staff member": "เพิ่มพนักงาน", "Currently selected": "กำลังเลือกอยู่",
+    "Pick another name first.": "เลือกชื่ออื่นก่อน", "Staff removed": "ลบพนักงานแล้ว",
+    "Item removed": "ลบรายการแล้ว", "Customer removed": "ลบลูกค้าแล้ว",
+    "Remove item?": "ลบรายการนี้?", "Remove": "ลบ", "Cancel": "ยกเลิก",
+    "This removes": "การลบนี้จะนำ", "from the menu. Past sales keep their record.": "ออกจากเมนู ยอดขายที่ผ่านมายังคงอยู่",
+    "Add a drink": "เพิ่มเครื่องดื่ม", "Add a dish": "เพิ่มอาหาร",
+    "No snacks yet": "ยังไม่มีของว่าง", "Add packaged snacks from your distributors below.": "เพิ่มของว่างแพ็กเกจจากผู้จัดจำหน่ายด้านล่าง",
+    "Tap a price to edit · changes save to the cloud instantly": "แตะที่ราคาเพื่อแก้ไข · บันทึกขึ้นคลาวด์ทันที",
+    "rice 150g included · tap a price to edit": "รวมข้าว 150 ก. · แตะที่ราคาเพื่อแก้ไข",
+    "Edit customer": "แก้ไขลูกค้า", "Edit": "แก้ไข", "Delete": "ลบ",
     // settings
     "Language": "ภาษา", "Appearance": "ลักษณะที่แสดง",
     "Switch the whole app between English and Thai. Item names and labels translate instantly.":

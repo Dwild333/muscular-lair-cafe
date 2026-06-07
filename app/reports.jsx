@@ -188,21 +188,22 @@ function PriceEdit({ value, onSave }) {
   return <button className="price-show money" onClick={() => setEdit(true)}>{window.CafeData.THB(value)}<Icon name="edit" size={13} /></button>;
 }
 
-function CatalogView({ catalog, setCatalog, savedItems, onSaveItem, onDeleteSaved }) {
-  const { ALC_DISHES, ALC_PROTEINS, ADDONS, FLAVORS } = window.CafeData;
+function CatalogView({ catalog, onSetPrice, savedItems, onSaveItem, onDeleteItem, addons, proteins, onSetAddonPrice, onSetProteinPrice }) {
+  const { ALC_DISHES, FLAVORS } = window.CafeData;
   const [tab, setTab] = useStateR("Drinks");
   const [custom, setCustom] = useStateR(false);
+  const [confirm, setConfirm] = useStateR(null); // item pending delete
   const tabs = ["Drinks", "Food", "Snacks", "À la carte", "Flavors", "Saved"];
 
-  const setPrice = (id, price) => setCatalog((c) => c.map((it) => it.id === id ? { ...it, price } : it));
   const menu = catalog.filter((c) => c.cat === tab);
   const TAB_GROUP = { Drinks: "drink", Food: "food", Snacks: "snack" };
   const isSaved = (id) => savedItems.some((s) => s.id === id);
+  const addLabel = { Drinks: tR("Add a drink"), Food: tR("Add a dish"), Snacks: tR("Add a packaged snack") };
 
   return (
     <div className="catalog">
       <div className="view-head">
-        <div><h2>{tR("Catalog")}</h2><div className="sub">{tR("Tap a price to edit · changes apply instantly at the counter")}</div></div>
+        <div><h2>{tR("Catalog")}</h2><div className="sub">{tR("Tap a price to edit · changes save to the cloud instantly")}</div></div>
         <div className="spacer" />
         <Btn kind="primary" icon="plus" onClick={() => setCustom(true)}>{tR("New item")}</Btn>
       </div>
@@ -211,24 +212,27 @@ function CatalogView({ catalog, setCatalog, savedItems, onSaveItem, onDeleteSave
       </div>
 
       <div className="cat-list">
-        {(tab === "Drinks" || tab === "Food" || tab === "Snacks") && menu.map((it) => (
-          <div key={it.id} className="cat-row">
-            <span className="cr-ic"><Icon name={it.glyph || "dot"} size={20} /></span>
-            <span className="cr-nm">{tnameR(it.name)}{it.kind === "drink" && <em className="cr-tag">{tR("customisable")}</em>}{isSaved(it.id) && <span className="cr-group">{tR("added")}</span>}</span>
-            <PriceEdit value={it.price} onSave={(p) => setPrice(it.id, p)} />
-            {isSaved(it.id) && <button className="cr-del" onClick={() => onDeleteSaved(it.id)} aria-label="delete"><Icon name="trash" size={16} /></button>}
-          </div>
-        ))}
-        {tab === "Snacks" && (
-          <button className="cat-add-row" onClick={() => setCustom(true)}><Icon name="plus" size={18} />{tR("Add a packaged snack")}</button>
-        )}
+        {(tab === "Drinks" || tab === "Food" || tab === "Snacks") && (<>
+          {menu.map((it) => (
+            <div key={it.id} className="cat-row">
+              <span className="cr-ic"><Icon name={it.glyph || "dot"} size={20} /></span>
+              <span className="cr-nm">{tnameR(it.name)}{it.kind === "drink" && <em className="cr-tag">{tR("customisable")}</em>}{isSaved(it.id) && <span className="cr-group">{tR("added")}</span>}</span>
+              <PriceEdit value={it.price} onSave={(p) => onSetPrice(it.id, p)} />
+              <button className="cr-del" onClick={() => setConfirm(it)} aria-label="delete"><Icon name="trash" size={16} /></button>
+            </div>
+          ))}
+          {menu.length === 0 && tab === "Snacks" && <EmptyState icon="catalog" title={tR("No snacks yet")} sub={tR("Add packaged snacks from your distributors below.")} />}
+          <button className="cat-add-row" onClick={() => setCustom(true)}><Icon name="plus" size={18} />{addLabel[tab]}</button>
+        </>)}
 
         {tab === "À la carte" && (<>
-          <div className="cat-sub">{tR("Protein & size")} <em className="cr-unit">{tR("rice 150g included")}</em></div>
-          {ALC_PROTEINS.map((p) => (
+          <div className="cat-sub">{tR("Protein & size")} <em className="cr-unit">{tR("rice 150g included · tap a price to edit")}</em></div>
+          {proteins.map((p) => (
             <div key={p.id} className="cat-row cat-flavor">
               <span className="cr-nm">{tR(p.name)}</span>
-              <span className="flavor-chips">{p.weights.map((w) => <span key={w.g} className="chip chip-mini">{w.g} <b className="money">{window.CafeData.THB(w.price)}</b></span>)}</span>
+              <span className="flavor-chips">{p.weights.map((w, i) => (
+                <span key={w.g} className="alc-price-chip">{w.g} <PriceEdit value={w.price} onSave={(pr) => onSetProteinPrice(p.id, i, pr)} /></span>
+              ))}</span>
             </div>
           ))}
           <div className="cat-sub">{tR("Dishes")}</div>
@@ -241,16 +245,14 @@ function CatalogView({ catalog, setCatalog, savedItems, onSaveItem, onDeleteSave
         </>)}
 
         {tab === "Flavors" && (<>
-          {ADDONS.length > 0 && (<>
-            <div className="cat-sub">{tR("Drink add-ons")}</div>
-            {ADDONS.map((a) => (
-              <div key={a.id} className="cat-row">
-                <span className="cr-ic"><Icon name="plus" size={18} /></span>
-                <span className="cr-nm">{tnameR(a.name)}</span>
-                <span className="price-show money">+{window.CafeData.THB(a.price)}</span>
-              </div>
-            ))}
-          </>)}
+          <div className="cat-sub">{tR("Drink add-ons")}</div>
+          {addons.map((a) => (
+            <div key={a.id} className="cat-row">
+              <span className="cr-ic"><Icon name="plus" size={18} /></span>
+              <span className="cr-nm">{tnameR(a.name)}</span>
+              <PriceEdit value={a.price} onSave={(p) => onSetAddonPrice(a.id, p)} />
+            </div>
+          ))}
           <div className="cat-sub">{tR("Flavors")}</div>
           {Object.entries(FLAVORS).map(([k, list]) => (
             <div key={k} className="cat-row cat-flavor">
@@ -266,13 +268,19 @@ function CatalogView({ catalog, setCatalog, savedItems, onSaveItem, onDeleteSave
             <div key={it.id} className="cat-row">
               <span className="cr-ic"><Icon name="dot" size={18} /></span>
               <span className="cr-nm">{tnameR(it.name)}{it.group && <span className="cr-group">{tR(GROUP_LABEL[it.group])}</span>}</span>
-              <span className="price-show money">{window.CafeData.THB(it.price)}</span>
-              <button className="cr-del" onClick={() => onDeleteSaved(it.id)} aria-label="delete"><Icon name="trash" size={16} /></button>
+              <PriceEdit value={it.price} onSave={(p) => onSetPrice(it.id, p)} />
+              <button className="cr-del" onClick={() => setConfirm(it)} aria-label="delete"><Icon name="trash" size={16} /></button>
             </div>
           )))}
       </div>
 
       {custom && <CustomModal onClose={() => setCustom(false)} onSave={(it) => onSaveItem(it)} saveOnly defaultGroup={TAB_GROUP[tab] || "food"} />}
+      {confirm && (
+        <Modal open onClose={() => setConfirm(null)} title={tR("Remove item?")}
+          footer={<><div className="spacer" /><Btn kind="ghost" onClick={() => setConfirm(null)}>{tR("Cancel")}</Btn><Btn kind="danger" icon="trash" onClick={() => { onDeleteItem(confirm.id); setConfirm(null); }}>{tR("Remove")}</Btn></>}>
+          <p className="form-note" style={{ marginTop: 0 }}>{tR("This removes")} <b>{tnameR(confirm.name)}</b> {tR("from the menu. Past sales keep their record.")}</p>
+        </Modal>
+      )}
     </div>
   );
 }

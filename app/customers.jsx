@@ -18,15 +18,31 @@ function SplitBar({ split }) {
   );
 }
 
-function CustomerModal({ cust, period, onClose }) {
+function CustomerModal({ cust, period, onClose, onUpdate, onDelete }) {
   const { THB } = window.CafeData;
+  const [editing, setEditing] = useStateC(false);
+  const [name, setName] = useStateC(cust.name);
+  const [tag, setTag] = useStateC(cust.tag);
   const month = cust.spend;
   const week = Math.round(cust.spend / 4.3);
   const spend = period === "week" ? week : month;
   const amts = catAmounts(cust, spend);
+
+  if (editing) {
+    return (
+      <Modal open onClose={onClose} title={tC("Edit customer")}
+        footer={<><Btn kind="danger" icon="trash" onClick={() => { onDelete(cust.id); onClose(); }}>{tC("Delete")}</Btn><div className="spacer" /><Btn kind="ghost" onClick={() => setEditing(false)}>{tC("Cancel")}</Btn><Btn kind="primary" icon="check" disabled={!name.trim()} onClick={() => { onUpdate(cust.id, { name: name.trim(), tag }); onClose(); }}>{tC("Save customer")}</Btn></>}>
+        <Field label={tC("Name")}><input className="input" autoFocus value={name} onChange={(e) => setName(e.target.value)} /></Field>
+        <div className="field" style={{ marginTop: 14 }}>
+          <span className="field-label">{tC("Type")}</span>
+          <Segmented full value={tag} onChange={setTag} options={[{ value: "Member", label: tC("Member") }, { value: "Coach", label: tC("Coach") }, { value: "Regular", label: tC("Regular") }]} />
+        </div>
+      </Modal>
+    );
+  }
   return (
     <Modal open onClose={onClose} title={cust.name}
-      footer={<><Pill tone="neutral">{tC(cust.tag)}</Pill><div className="spacer" /><span className="modal-total">{period === "week" ? tC("This week") : tC("This month")} <b className="money">{THB(spend)}</b></span></>}>
+      footer={<><Pill tone="neutral">{tC(cust.tag)}</Pill><Btn kind="ghost" icon="edit" onClick={() => setEditing(true)}>{tC("Edit")}</Btn><div className="spacer" /><span className="modal-total">{period === "week" ? tC("This week") : tC("This month")} <b className="money">{THB(spend)}</b></span></>}>
       <div className="cm-kpis">
         <div className="cm-kpi"><span className="cm-lbl">{tC("This month")}</span><span className="cm-val money">{THB(month)}</span></div>
         <div className="cm-kpi"><span className="cm-lbl">{tC("This week")}</span><span className="cm-val money">{THB(week)}</span></div>
@@ -73,7 +89,7 @@ function AddCustomerModal({ onClose, onAdd }) {
   );
 }
 
-function CustomersView({ customers, onAddCustomer }) {
+function CustomersView({ customers, onAddCustomer, onUpdateCustomer, onDeleteCustomer }) {
   const { THB } = window.CafeData;
   const [q, setQ] = useStateC("");
   const [period, setPeriod] = useStateC("month");
@@ -117,7 +133,7 @@ function CustomersView({ customers, onAddCustomer }) {
         })}
       </div>
 
-      {open && <CustomerModal cust={open} period={period} onClose={() => setOpen(null)} />}
+      {open && <CustomerModal cust={open} period={period} onClose={() => setOpen(null)} onUpdate={onUpdateCustomer} onDelete={onDeleteCustomer} />}
       {adding && <AddCustomerModal onClose={() => setAdding(false)} onAdd={onAddCustomer} />}
     </div>
   );

@@ -353,3 +353,31 @@
   .c-items { display: none; }
   .thead .c-items { display: none; }
 }
+
+/* ---- Login + boot (Supabase auth) ---- */
+.login-screen { min-height: 100vh; display: grid; place-items: center; background: var(--bg); padding: 24px; }
+.login-card { width: min(380px, 100%); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 34px 28px 28px; box-shadow: var(--shadow); display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.login-mark { width: 58px; height: 58px; border-radius: 16px; background: var(--primary); color: var(--primary-ink); display: grid; place-items: center; font-family: "Space Grotesk", "IBM Plex Sans Thai"; font-weight: 700; font-size: 26px; }
+.login-title { font-family: "Space Grotesk", "IBM Plex Sans Thai"; font-weight: 700; font-size: 23px; margin: 12px 0 0; }
+.login-sub { color: var(--muted); font-size: 14px; margin-bottom: 18px; }
+.login-field { width: 100%; display: flex; flex-direction: column; gap: 7px; margin-bottom: 14px; }
+.login-field > span { font-weight: 600; font-size: 13.5px; color: var(--ink-2); }
+.login-err { width: 100%; color: var(--warn); background: var(--warn-soft); border-radius: 10px; padding: 9px 12px; font-size: 13px; font-weight: 600; margin-bottom: 12px; }
+.boot { min-height: 100vh; display: grid; place-items: center; align-content: center; gap: 18px; background: var(--bg); }
+.boot-mark { width: 58px; height: 58px; border-radius: 16px; background: var(--primary); color: var(--primary-ink); display: grid; place-items: center; font-family: "Space Grotesk", "IBM Plex Sans Thai"; font-weight: 700; font-size: 26px; }
+.boot-spin { width: 26px; height: 26px; border-radius: 50%; border: 3px solid var(--line); border-top-color: var(--primary); animation: ml-spin .8s linear infinite; }
+@keyframes ml-spin { to { transform: rotate(360deg); } }
+
+/* ---- Staff manager (Settings) ---- */
+.staff-manage { display: flex; flex-direction: column; gap: 8px; margin: 6px 0 10px; }
+.sm-row { display: flex; align-items: center; gap: 10px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 11px; padding: 9px 11px; }
+.sm-nm { font-weight: 600; font-size: 14.5px; }
+.sm-rl { color: var(--muted); font-size: 12.5px; margin-left: 2px; }
+.sm-row .cr-del { margin-left: auto; }
+.sm-add { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 4px; }
+.sm-add .input { flex: 1; min-width: 140px; }
+
+/* ---- À la carte editable price chips (Catalog) ---- */
+.alc-price-chip { display: inline-flex; align-items: center; gap: 6px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 100px; padding: 3px 6px 3px 12px; font-size: 12.5px; font-weight: 600; }
+.alc-price-chip .price-show { padding: 2px 6px; font-size: 12.5px; }
+.alc-price-chip .price-edit { font-size: 12.5px; }

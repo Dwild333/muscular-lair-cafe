@@ -82,7 +82,35 @@ function StaffManager({ staffList, current, onAdd, onDelete }) {
   );
 }
 
-function SettingsView({ lang, setLang, staffList, current, onAddStaff, onDeleteStaff, onSignOut }) {
+function PasswordCard({ onToast }) {
+  const [pw, setPw] = useStateA("");
+  const [pw2, setPw2] = useStateA("");
+  const [busy, setBusy] = useStateA(false);
+  const [err, setErr] = useStateA(null);
+  const valid = pw.length >= 8 && pw === pw2;
+  async function submit() {
+    setErr(null);
+    if (pw.length < 8) { setErr(tA("Use at least 8 characters.")); return; }
+    if (pw !== pw2) { setErr(tA("The two passwords don't match.")); return; }
+    setBusy(true);
+    try { await window.mlAuth.changePassword(pw); setPw(""); setPw2(""); onToast(tA("Login password updated")); }
+    catch (e) { setErr((e && e.message) || tA("Could not update password.")); }
+    setBusy(false);
+  }
+  return (
+    <div className="card set-card">
+      <div className="set-row-head"><Icon name="user" size={20} /><div><div className="set-title">{tA("Login password")}</div><div className="set-desc">{tA("Change the shared password everyone uses to open the app. Staff stay signed in; the new password is needed next time they log in.")}</div></div></div>
+      <div className="pw-form">
+        <Field label={tA("New password")}><input className="input" type="password" value={pw} onChange={(e) => setPw(e.target.value)} placeholder="••••••••" /></Field>
+        <Field label={tA("Confirm new password")}><input className="input" type="password" value={pw2} onChange={(e) => setPw2(e.target.value)} placeholder="••••••••" /></Field>
+        {err && <div className="login-err" style={{ marginBottom: 0 }}>{err}</div>}
+        <Btn kind="primary" icon="check" disabled={!valid || busy} onClick={submit}>{busy ? tA("Saving…") : tA("Update password")}</Btn>
+      </div>
+    </div>
+  );
+}
+
+function SettingsView({ lang, setLang, staffList, current, onAddStaff, onDeleteStaff, onSignOut, onToast }) {
   return (
     <div className="settings">
       <div className="view-head"><div><h2>{tA("Settings")}</h2><div className="sub">{tA("Changes are saved to the cloud and sync to every device.")}</div></div><div className="spacer" /><Btn kind="outline" icon="back" onClick={onSignOut}>{tA("Log out")}</Btn></div>
@@ -101,6 +129,7 @@ function SettingsView({ lang, setLang, staffList, current, onAddStaff, onDeleteS
           </div>
         </div>
         <StaffManager staffList={staffList} current={current} onAdd={onAddStaff} onDelete={onDeleteStaff} />
+        {current && current.role === "Owner" && <PasswordCard onToast={onToast} />}
       </div>
     </div>
   );
@@ -323,7 +352,7 @@ function App() {
           {view === "customers" && <CustomersView customers={customers} onAddCustomer={addCustomer} onUpdateCustomer={updateCustomer} onDeleteCustomer={deleteCustomer} />}
           {view === "reports" && <ReportsView ledger={ledger} onToast={showToast} />}
           {view === "catalog" && <CatalogView catalog={catalog} onSetPrice={setPrice} savedItems={savedItems} onSaveItem={saveItem} onDeleteItem={deleteItem} onUpdateItem={updateItem} addons={addons} proteins={proteins} onSetAddonPrice={setAddonPrice} onSetProteinPrice={setProteinPrice} />}
-          {view === "settings" && <SettingsView lang={lang} setLang={setLang} staffList={staffList} current={staff} onAddStaff={addStaff} onDeleteStaff={deleteStaff} onSignOut={handleLogout} />}
+          {view === "settings" && <SettingsView lang={lang} setLang={setLang} staffList={staffList} current={staff} onAddStaff={addStaff} onDeleteStaff={deleteStaff} onSignOut={handleLogout} onToast={showToast} />}
         </main>
       </div>
 

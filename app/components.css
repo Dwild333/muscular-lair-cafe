@@ -395,3 +395,7 @@
 .variant-row .input { flex: 1; }
 .variant-baht { color: var(--muted); font-weight: 700; }
 .variant-price { max-width: 90px; }
+
+/* ---- Settings: password form ---- */
+.pw-form { display: flex; flex-direction: column; gap: 12px; max-width: 360px; }
+.pw-form .btn-primary { align-self: flex-start; }

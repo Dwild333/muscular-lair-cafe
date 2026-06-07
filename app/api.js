@@ -36,6 +36,22 @@
     async session() { const { data } = await sb.auth.getSession(); return data.session; },
     async signIn(password) { return sb.auth.signInWithPassword({ email: SHOP_EMAIL, password }); },
     async signOut() { await sb.auth.signOut(); },
+    async changePassword(newPassword) {
+      // Call the GoTrue REST endpoint directly with the access token — more
+      // reliable than sb.auth.updateUser(), which intermittently reports
+      // "Auth session missing" under the in-browser Babel setup.
+      const { data: { session } } = await sb.auth.getSession();
+      if (!session) throw new Error("Not signed in");
+      const res = await fetch(SUPA_URL + "/auth/v1/user", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", apikey: SUPA_KEY, Authorization: "Bearer " + session.access_token },
+        body: JSON.stringify({ password: newPassword }),
+      });
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({}));
+        throw new Error(j.msg || j.error_description || j.error || ("Update failed (" + res.status + ")"));
+      }
+    },
     onChange(cb) { return sb.auth.onAuthStateChange((_e, s) => cb(s)); },
   };
 

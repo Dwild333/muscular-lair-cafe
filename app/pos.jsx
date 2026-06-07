@@ -7,19 +7,24 @@ function lineUid() { return "li" + Math.random().toString(36).slice(2, 8); }
 const GROUP_CAT = { drink: "Drinks", food: "Food", snack: "Snacks" };
 const GROUP_GLYPH = { drink: "cup", food: "bowl", snack: "stack" };
 
-// ---------- Drink customization (flavor + add-ons + qty) -------------------
+// ---------- Drink customization (hot/iced variant + flavor + add-ons + qty) -
 function DrinkModal({ item, onClose, onAdd }) {
   const { FLAVORS, ADDONS, THB } = window.CafeData;
   const flavors = item.flavors || FLAVORS[item.name] || null;
+  const variants = item.variants || null;
+  const [variant, setVariant] = useStateP(variants ? variants[0] : null);
   const [flavor, setFlavor] = useStateP(flavors ? flavors[0] : null);
   const [addons, setAddons] = useStateP({});
   const [qty, setQty] = useStateP(1);
   const toggle = (a) => setAddons((m) => ({ ...m, [a.id]: !m[a.id] }));
   const addOnList = ADDONS.filter((a) => addons[a.id]);
-  const unit = item.price + addOnList.reduce((s, a) => s + a.price, 0);
+  const base = variant ? variant.price : item.price;
+  const unit = base + addOnList.reduce((s, a) => s + a.price, 0);
 
   function commit() {
-    const name = item.name + (flavor ? " · " + flavor : "");
+    const name = item.name
+      + (variant ? " · " + variant.label : "")
+      + (flavor ? " · " + flavor : "");
     const note = addOnList.length ? addOnList.map((a) => "+ " + a.name).join("  ") : "";
     onAdd({ uid: lineUid(), name, note, price: unit, qty, base: item.id, group: item.group || "drink" });
     onClose();
@@ -33,6 +38,18 @@ function DrinkModal({ item, onClose, onAdd }) {
         <span className="modal-total">{t("Line total")} <b className="money">{THB(unit * qty)}</b></span>
         <Btn kind="primary" icon="plus" onClick={commit}>{t("Add to ticket")}</Btn>
       </>}>
+      {variants && (
+        <div className="cust-block">
+          <div className="cust-label">{t("Serve")}</div>
+          <div className="chip-grid">
+            {variants.map((v) => (
+              <button key={v.label} className={"chip" + (variant === v ? " is-on" : "")} onClick={() => setVariant(v)}>
+                {t(v.label)} <span className="money">{THB(v.price)}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
       {flavors && (
         <div className="cust-block">
           <div className="cust-label">{t("Flavor")}</div>
@@ -43,67 +60,88 @@ function DrinkModal({ item, onClose, onAdd }) {
           </div>
         </div>
       )}
-      <div className="cust-block">
-        <div className="cust-label">{t("Add-ons")} <span className="cust-hint">{t("tap to include")}</span></div>
-        <div className="addon-grid">
-          {ADDONS.map((a) => (
-            <button key={a.id} className={"addon" + (addons[a.id] ? " is-on" : "")} onClick={() => toggle(a)}>
-              <span className="addon-check"><Icon name="check" size={14} /></span>
-              <span className="addon-nm">{t(a.name)}</span>
-              <span className="addon-pr money">+{THB(a.price)}</span>
-            </button>
-          ))}
+      {ADDONS.length > 0 && (
+        <div className="cust-block">
+          <div className="cust-label">{t("Add-ons")} <span className="cust-hint">{t("tap to include")}</span></div>
+          <div className="addon-grid">
+            {ADDONS.map((a) => (
+              <button key={a.id} className={"addon" + (addons[a.id] ? " is-on" : "")} onClick={() => toggle(a)}>
+                <span className="addon-check"><Icon name="check" size={14} /></span>
+                <span className="addon-nm">{t(a.name)}</span>
+                <span className="addon-pr money">+{THB(a.price)}</span>
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </Modal>
   );
 }
 
-// ---------- À la carte plate builder ---------------------------------------
+// ---------- À la carte builder (dish + protein + weight, rice 150g incl) -----
 function AlaCarte({ onAdd }) {
-  const { COMPONENTS, THB } = window.CafeData;
-  const [sel, setSel] = useStateP({});
-  const groups = ["Protein", "Carbs", "Extras"];
-  const setQ = (id, q) => setSel((m) => ({ ...m, [id]: Math.max(0, q) }));
-  const chosen = COMPONENTS.filter((c) => sel[c.id] > 0);
-  const total = chosen.reduce((s, c) => s + c.price * sel[c.id], 0);
+  const { ALC_DISHES, ALC_PROTEINS, THB } = window.CafeData;
+  const [dish, setDish] = useStateP(ALC_DISHES[0]);
+  const [protein, setProtein] = useStateP(ALC_PROTEINS[0]);
+  const [wIdx, setWIdx] = useStateP(0);
+  const [qty, setQty] = useStateP(1);
+
+  // clamp weight when switching to a protein with fewer tiers (e.g. Braised Beef)
+  const weights = protein.weights;
+  const safeIdx = Math.min(wIdx, weights.length - 1);
+  const weight = weights[safeIdx];
+  const unit = weight.price;
+
+  function pickProtein(p) {
+    setProtein(p);
+    if (wIdx > p.weights.length - 1) setWIdx(p.weights.length - 1);
+  }
 
   function addPlate() {
-    if (!chosen.length) return;
-    const note = chosen.map((c) => `${c.name}${sel[c.id] > 1 ? " ×" + sel[c.id] : ""}`).join(" · ");
-    onAdd({ uid: lineUid(), name: "À la carte plate", note, price: total, qty: 1, base: "alacarte", group: "food" });
-    setSel({});
+    const note = `${protein.name} · ${weight.g} · Rice 150g`;
+    onAdd({ uid: lineUid(), name: dish.name, note, price: unit, qty, base: dish.id + "_" + protein.id + "_" + weight.g, group: "food" });
+    setQty(1);
   }
 
   return (
     <div className="alc">
-      <div className="alc-cols">
-        {groups.map((g) => (
-          <div key={g} className="alc-col">
-            <div className="alc-group">{t(g)}</div>
-            {COMPONENTS.filter((c) => c.group === g).map((c) => {
-              const q = sel[c.id] || 0;
-              return (
-                <div key={c.id} className={"alc-item" + (q > 0 ? " is-on" : "")}>
-                  <div className="alc-item-main" onClick={() => setQ(c.id, q + 1)}>
-                    <span className="alc-nm">{tname(c.name)}</span>
-                    <span className="alc-meta"><span className="money">{THB(c.price)}</span> / {t(c.unit)}</span>
-                  </div>
-                  {q > 0
-                    ? <Stepper value={q} onChange={(v) => setQ(c.id, v)} min={0} />
-                    : <button className="alc-add" onClick={() => setQ(c.id, 1)}><Icon name="plus" size={16} /></button>}
-                </div>
-              );
-            })}
+      <div className="alc-build">
+        <div className="alc-step">
+          <div className="alc-group">{t("Dish")}</div>
+          <div className="alc-dish-grid">
+            {ALC_DISHES.map((d) => (
+              <button key={d.id} className={"chip alc-dish" + (dish.id === d.id ? " is-on" : "")} onClick={() => setDish(d)}>{tname(d.name)}</button>
+            ))}
           </div>
-        ))}
+        </div>
+
+        <div className="alc-step">
+          <div className="alc-group">{t("Protein")}</div>
+          <div className="chip-grid">
+            {ALC_PROTEINS.map((p) => (
+              <button key={p.id} className={"chip" + (protein.id === p.id ? " is-on" : "")} onClick={() => pickProtein(p)}>{t(p.name)}</button>
+            ))}
+          </div>
+        </div>
+
+        <div className="alc-step">
+          <div className="alc-group">{t("Size")} <span className="cust-hint">{t("rice 150g included")}</span></div>
+          <div className="chip-grid">
+            {weights.map((w, i) => (
+              <button key={w.g} className={"chip" + (safeIdx === i ? " is-on" : "")} onClick={() => setWIdx(i)}>
+                {w.g} <span className="money">{THB(w.price)}</span>
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
+
       <div className="alc-bar">
         <div className="alc-sum">
-          {chosen.length ? <span className="alc-sumtext">{chosen.length} {t(chosen.length > 1 ? "items" : "item")} · <b className="money">{THB(total)}</b></span>
-            : <span className="alc-sumtext muted">{t("Tap components to build a plate")}</span>}
+          <span className="alc-sumtext">{tname(dish.name)} · {t(protein.name)} {weight.g} · <b className="money">{THB(unit * qty)}</b></span>
         </div>
-        <Btn kind="primary" icon="plus" disabled={!chosen.length} onClick={addPlate}>{t("Add plate to ticket")}</Btn>
+        <Stepper value={qty} onChange={setQty} min={1} />
+        <Btn kind="primary" icon="plus" onClick={addPlate}>{t("Add to ticket")}</Btn>
       </div>
     </div>
   );

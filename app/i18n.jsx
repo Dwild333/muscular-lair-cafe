@@ -27,6 +27,8 @@
       "สินค้าที่บันทึกจะแสดงในหมวดนี้ที่หน้าเคาน์เตอร์และในรายงาน — เหมาะสำหรับของว่างแพ็กเกจจากผู้จัดจำหน่ายในพื้นที่",
     // à la carte
     "Protein": "โปรตีน", "Carbs": "คาร์บ", "Extras": "เพิ่มเติม",
+    "Dish": "เมนู", "Size": "ขนาด", "Serve": "แบบ", "Hot": "ร้อน", "Iced": "เย็น",
+    "rice 150g included": "รวมข้าว 150 ก.", "Protein & size": "โปรตีน & ขนาด", "Dishes": "เมนูผัด",
     "Tap components to build a plate": "แตะวัตถุดิบเพื่อจัดจาน",
     "Add plate to ticket": "เพิ่มจานลงบิล",
     "items": "รายการ", "item": "รายการ", "per": "ต่อ",
@@ -101,26 +103,34 @@
     "this week to CSV": "สัปดาห์นี้เป็น CSV", "June to Excel (.xlsx)": "มิถุนายนเป็น Excel (.xlsx)",
     "2026 to Excel (.xlsx)": "ปี 2026 เป็น Excel (.xlsx)",
     // data — drinks
-    "Protein Shake": "โปรตีนเชค", "Pre-Workout": "พรีเวิร์กเอาท์", "Smoothie": "สมูทตี้",
-    "Iced Americano": "อเมริกาโน่เย็น", "Water": "น้ำเปล่า", "Electrolyte": "เกลือแร่",
-    // data — food
-    "Chicken Rice Bowl": "ข้าวหน้าไก่", "Pad Kra Pao": "กะเพรา", "Beef Steak & Veg": "สเต๊กเนื้อกับผัก",
-    "Tuna Salad": "สลัดทูน่า", "Protein Pancakes": "แพนเค้กโปรตีน", "Egg White Omelette": "ไข่ขาวเจียว",
-    "À la carte plate": "จานจัดเอง",
-    // data — snacks
-    "Protein Bar": "โปรตีนบาร์", "Mixed Nuts": "ถั่วรวม", "Greek Yogurt": "กรีกโยเกิร์ต",
-    "Rice Cakes": "ข้าวพอง", "Boiled Eggs ×2": "ไข่ต้ม ×2", "Banana": "กล้วย",
-    // data — add-ons
-    "Extra Whey Scoop": "เวย์เพิ่ม 1 ช้อน", "Peanut Butter": "เนยถั่ว", "Oats": "ข้าวโอ๊ต",
-    "Honey": "น้ำผึ้ง", "Chia Seeds": "เมล็ดเจีย", "Almond Milk": "นมอัลมอนด์", "Espresso Shot": "เอสเพรสโซช็อต",
-    // data — flavors
-    "Chocolate": "ช็อกโกแลต", "Vanilla": "วานิลลา", "Strawberry": "สตรอว์เบอร์รี", "Cookies & Cream": "คุกกี้แอนด์ครีม",
-    "Blue Razz": "บลูราสป์", "Green Apple": "แอปเปิลเขียว", "Fruit Punch": "ฟรุตพันช์", "Watermelon": "แตงโม",
-    "Mango": "มะม่วง", "Mixed Berry": "เบอร์รีรวม", "Green Matcha": "มัทฉะ", "Tropical": "ทรอปิคอล",
-    // data — components
-    "Grilled Chicken Breast": "อกไก่ย่าง", "Lean Beef": "เนื้อไม่ติดมัน", "White Fish": "ปลาเนื้อขาว",
-    "Egg": "ไข่", "Egg White": "ไข่ขาว", "Jasmine Rice": "ข้าวหอมมะลิ", "Brown Rice": "ข้าวกล้อง",
-    "Sweet Potato": "มันหวาน", "Steamed Veg": "ผักนึ่ง", "Avocado": "อะโวคาโด", "Side Salad": "สลัดเครื่องเคียง",
+    "Amino Soda": "อะมิโนโซดา", "Muscular Smoothie": "มัสคิวลาร์สมูทตี้", "Whey Protein": "เวย์โปรตีน",
+    "Pre-Workout": "พรีเวิร์กเอาท์", "Espresso": "เอสเพรสโซ", "Black Coffee": "กาแฟดำ",
+    "Cappuccino": "คาปูชิโน", "Latte": "ลาเต้", "Mocha": "มอคค่า", "Caramel Macchiato": "คาราเมลมัคคิอาโต",
+    "Milk & Tea": "นม & ชา",
+    // data — amino soda flavors
+    "Lemon Lime": "เลมอนไลม์", "Fruit Punch": "ฟรุตพันช์", "Glacial Grape": "องุ่น",
+    "Strawberry Kiwi": "สตรอว์เบอร์รีกีวี", "Smash Apple": "แอปเปิล", "Blue Raspberry": "บลูราสป์เบอร์รี",
+    // data — smoothie flavors
+    "Strawberry": "สตรอว์เบอร์รี", "Mango": "มะม่วง", "Mixberry": "เบอร์รีรวม", "Kiwi": "กีวี",
+    // data — milk & tea flavors
+    "Green Tea": "ชาเขียว", "Thai Tea": "ชาไทย", "Lemon Tea": "ชามะนาว",
+    "Cocoa": "โกโก้", "Pink Milk": "นมชมพู", "Caramel Milk": "นมคาราเมล",
+    // data — food (kitchen)
+    "Steamed Rice 150g": "ข้าวสวย 150 ก.", "Fried Egg": "ไข่ดาว",
+    "Rice with Chicken Omelet": "ข้าวไข่เจียวไก่", "Rice with Pork Omelet": "ข้าวไข่เจียวหมูสับ",
+    "Rice with Shrimp Omelet": "ข้าวไข่เจียวกุ้ง",
+    "Spaghetti Chicken with Sauce": "สปาเก็ตตี้ไก่ซอสมะเขือเทศ", "Spaghetti Chicken Green Curry": "สปาเก็ตตี้เขียวหวานไก่",
+    "Spaghetti Shrimp Chili Paste": "สปาเก็ตตี้กุ้งพริกเผา", "Drunken Spaghetti Shrimp": "สปาเก็ตตี้ขี้เมากุ้ง",
+    "Sour Curry Omelet & Shrimp": "แกงส้มไข่ชะอมกุ้ง", "Clear Soup Tofu & Minced Pork": "ต้มจืดเต้าหู้หมูสับ",
+    // data — à la carte proteins
+    "Chicken": "ไก่", "Pork": "หมู", "Beef": "เนื้อ", "Braised Beef": "เนื้อตุ๋น", "Shrimp": "กุ้ง",
+    // data — à la carte dishes
+    "Stir Fried with Broccoli": "ผัดบล็อกโคลี่", "Stir Fried with Egg": "ผัดไข่",
+    "Mushroom with Oyster Sauce": "ผัดเห็ดน้ำมันหอย", "Pad Cha (Thai Spicy)": "ผัดฉ่า",
+    "Stir Fried Green Curry": "ผัดเขียวหวาน", "Stir Fried Red Curry Paste": "ผัดเผ็ด",
+    "Stir Fried Chili Paste": "ผัดพริกเผา", "Stir Fried Sweet Pepper": "ผัดพริกสด",
+    "Stir Fried Ginger": "ผัดขิง", "Stir Fried Curry Powder": "ผัดผงกะหรี่",
+    "Stir Fried Garlic & Pepper": "ผัดกระเทียมพริกไทย", "Larb (Thai Spicy Salad)": "ลาบ", "Fried Rice": "ข้าวผัด",
   };
 
   function t(s) {

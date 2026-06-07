@@ -160,10 +160,10 @@ function PriceEdit({ value, onSave }) {
 }
 
 function CatalogView({ catalog, setCatalog, savedItems, onSaveItem, onDeleteSaved }) {
-  const { COMPONENTS, ADDONS, FLAVORS } = window.CafeData;
+  const { ALC_DISHES, ALC_PROTEINS, ADDONS, FLAVORS } = window.CafeData;
   const [tab, setTab] = useStateR("Drinks");
   const [custom, setCustom] = useStateR(false);
-  const tabs = ["Drinks", "Food", "Snacks", "À la carte", "Add-ons", "Saved"];
+  const tabs = ["Drinks", "Food", "Snacks", "À la carte", "Flavors", "Saved"];
 
   const setPrice = (id, price) => setCatalog((c) => c.map((it) => it.id === id ? { ...it, price } : it));
   const menu = catalog.filter((c) => c.cat === tab);
@@ -194,23 +194,34 @@ function CatalogView({ catalog, setCatalog, savedItems, onSaveItem, onDeleteSave
           <button className="cat-add-row" onClick={() => setCustom(true)}><Icon name="plus" size={18} />{tR("Add a packaged snack")}</button>
         )}
 
-        {tab === "À la carte" && COMPONENTS.map((c) => (
-          <div key={c.id} className="cat-row">
-            <span className="cr-ic"><Icon name="dot" size={18} /></span>
-            <span className="cr-nm">{tnameR(c.name)} <em className="cr-unit">{tR("per")} {tR(c.unit)}</em><span className="cr-group">{tR(c.group)}</span></span>
-            <span className="price-show money">{window.CafeData.THB(c.price)}</span>
-          </div>
-        ))}
-
-        {tab === "Add-ons" && (<>
-          <div className="cat-sub">{tR("Drink add-ons")}</div>
-          {ADDONS.map((a) => (
-            <div key={a.id} className="cat-row">
-              <span className="cr-ic"><Icon name="plus" size={18} /></span>
-              <span className="cr-nm">{tnameR(a.name)}</span>
-              <span className="price-show money">+{window.CafeData.THB(a.price)}</span>
+        {tab === "À la carte" && (<>
+          <div className="cat-sub">{tR("Protein & size")} <em className="cr-unit">{tR("rice 150g included")}</em></div>
+          {ALC_PROTEINS.map((p) => (
+            <div key={p.id} className="cat-row cat-flavor">
+              <span className="cr-nm">{tR(p.name)}</span>
+              <span className="flavor-chips">{p.weights.map((w) => <span key={w.g} className="chip chip-mini">{w.g} <b className="money">{window.CafeData.THB(w.price)}</b></span>)}</span>
             </div>
           ))}
+          <div className="cat-sub">{tR("Dishes")}</div>
+          {ALC_DISHES.map((d) => (
+            <div key={d.id} className="cat-row">
+              <span className="cr-ic"><Icon name="bowl" size={18} /></span>
+              <span className="cr-nm">{tnameR(d.name)}</span>
+            </div>
+          ))}
+        </>)}
+
+        {tab === "Flavors" && (<>
+          {ADDONS.length > 0 && (<>
+            <div className="cat-sub">{tR("Drink add-ons")}</div>
+            {ADDONS.map((a) => (
+              <div key={a.id} className="cat-row">
+                <span className="cr-ic"><Icon name="plus" size={18} /></span>
+                <span className="cr-nm">{tnameR(a.name)}</span>
+                <span className="price-show money">+{window.CafeData.THB(a.price)}</span>
+              </div>
+            ))}
+          </>)}
           <div className="cat-sub">{tR("Flavors")}</div>
           {Object.entries(FLAVORS).map(([k, list]) => (
             <div key={k} className="cat-row cat-flavor">

@@ -79,6 +79,7 @@
     if (error) throw error; return mapItem(data);
   }
   async function deleteItem(id) { const { error } = await sb.from("ml_catalog").delete().eq("id", id); if (error) throw error; }
+  async function updateItem(id, fields) { const { data, error } = await sb.from("ml_catalog").update(fields).eq("id", id).select().single(); if (error) throw error; return mapItem(data); }
 
   // ---- add-ons & à la carte pricing ----
   async function setAddonPrice(id, price) { const { error } = await sb.from("ml_addons").update({ price }).eq("id", id); if (error) throw error; }
@@ -100,7 +101,7 @@
   window.mlAuth = auth;
   window.mlApi = {
     loadAll, addSale, updateSale,
-    setItemPrice, addItem, deleteItem,
+    setItemPrice, addItem, deleteItem, updateItem,
     setAddonPrice, setProteinWeights,
     addStaff, deleteStaff,
     addCustomer, updateCustomer, deleteCustomer,

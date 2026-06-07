@@ -188,11 +188,95 @@ function PriceEdit({ value, onSave }) {
   return <button className="price-show money" onClick={() => setEdit(true)}>{window.CafeData.THB(value)}<Icon name="edit" size={13} /></button>;
 }
 
-function CatalogView({ catalog, onSetPrice, savedItems, onSaveItem, onDeleteItem, addons, proteins, onSetAddonPrice, onSetProteinPrice }) {
+const ITEM_GLYPHS = ["shake", "bolt", "cup", "coffee", "drop", "bowl", "plate", "salad", "stack", "egg", "dot"];
+
+function ItemEditModal({ item, addons, onClose, onSave }) {
+  const GMAP = { drink: "Drinks", food: "Food", snack: "Snacks" };
+  const [name, setName] = useStateR(item.name);
+  const [price, setPrice] = useStateR(String(item.price));
+  const [group, setGroup] = useStateR(item.group || "drink");
+  const [glyph, setGlyph] = useStateR(item.glyph || "dot");
+  const [flavors, setFlavors] = useStateR(item.flavors ? [...item.flavors] : []);
+  const [flavorIn, setFlavorIn] = useStateR("");
+  const [variants, setVariants] = useStateR(item.variants ? item.variants.map((v) => ({ label: v.label, price: String(v.price) })) : []);
+  const [sel, setSel] = useStateR(() => { const m = {}; (item.addons || []).forEach((id) => m[id] = true); return m; });
+
+  const addFlavor = () => { const v = flavorIn.trim(); if (v && !flavors.includes(v)) setFlavors([...flavors, v]); setFlavorIn(""); };
+  const rmFlavor = (f) => setFlavors(flavors.filter((x) => x !== f));
+  const addVariant = () => setVariants([...variants, { label: "", price: price || "0" }]);
+  const setVar = (i, k, val) => setVariants(variants.map((v, j) => j === i ? { ...v, [k]: val } : v));
+  const rmVar = (i) => setVariants(variants.filter((_, j) => j !== i));
+  const valid = name.trim() && Number(price) >= 0;
+
+  function save() {
+    const fl = flavors.filter(Boolean);
+    const vr = variants.filter((v) => v.label.trim()).map((v) => ({ label: v.label.trim(), price: Number(v.price) || 0 }));
+    const ad = (addons || []).filter((a) => sel[a.id]).map((a) => a.id);
+    const customised = fl.length > 0 || vr.length > 0 || ad.length > 0;
+    onSave(item.id, {
+      name: name.trim(), price: Number(price) || 0, group, cat: GMAP[group] || item.cat, glyph,
+      flavors: fl.length ? fl : null, variants: vr.length ? vr : null, addons: ad.length ? ad : null,
+      kind: customised ? "drink" : "simple",
+    });
+    onClose();
+  }
+
+  return (
+    <Modal open onClose={onClose} title={tR("Edit item")} wide
+      footer={<><div className="spacer" /><Btn kind="ghost" onClick={onClose}>{tR("Cancel")}</Btn><Btn kind="primary" icon="check" disabled={!valid} onClick={save}>{tR("Save changes")}</Btn></>}>
+      <div className="form-grid">
+        <Field label={tR("Item name")}><input className="input" autoFocus value={name} onChange={(e) => setName(e.target.value)} /></Field>
+        <Field label={tR("Price (฿)")}><input className="input" type="number" inputMode="numeric" value={price} onChange={(e) => setPrice(e.target.value)} /></Field>
+      </div>
+      <div className="field" style={{ marginTop: 14 }}>
+        <span className="field-label">{tR("Category")}</span>
+        <Segmented full value={group} onChange={setGroup} options={[{ value: "drink", label: tR("Drinks") }, { value: "food", label: tR("Food") }, { value: "snack", label: tR("Snacks") }]} />
+      </div>
+      <div className="field" style={{ marginTop: 14 }}>
+        <span className="field-label">{tR("Icon")}</span>
+        <div className="glyph-grid">
+          {ITEM_GLYPHS.map((g) => (
+            <button key={g} className={"glyph-opt" + (glyph === g ? " is-on" : "")} onClick={() => setGlyph(g)} aria-label={g}><Icon name={g} size={20} /></button>
+          ))}
+        </div>
+      </div>
+      <div className="field" style={{ marginTop: 14 }}>
+        <span className="field-label">{tR("Flavor options")} <span style={{ color: "var(--muted)", fontWeight: 500 }}>{tR("· tap-to-pick at register")}</span></span>
+        {flavors.length > 0 && <div className="chip-grid" style={{ marginBottom: 8 }}>{flavors.map((f) => <span key={f} className="chip is-on flavor-edit-chip">{f}<button onClick={() => rmFlavor(f)} aria-label="remove"><Icon name="x" size={13} /></button></span>)}</div>}
+        <div className="flavor-add"><input className="input" value={flavorIn} onChange={(e) => setFlavorIn(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addFlavor(); } }} placeholder={tR("Add a flavor, then Enter")} /><Btn kind="ghost" icon="plus" onClick={addFlavor} disabled={!flavorIn.trim()} /></div>
+      </div>
+      <div className="field" style={{ marginTop: 14 }}>
+        <span className="field-label">{tR("Serve options")} <span style={{ color: "var(--muted)", fontWeight: 500 }}>{tR("· e.g. Hot / Iced, each with its own price")}</span></span>
+        {variants.map((v, i) => (
+          <div key={i} className="variant-row">
+            <input className="input" value={v.label} onChange={(e) => setVar(i, "label", e.target.value)} placeholder={tR("Label e.g. Iced")} />
+            <span className="variant-baht money">฿</span>
+            <input className="input variant-price" type="number" value={v.price} onChange={(e) => setVar(i, "price", e.target.value)} />
+            <button className="cr-del" onClick={() => rmVar(i)} aria-label="remove"><Icon name="x" size={15} /></button>
+          </div>
+        ))}
+        <button className="cat-add-row" onClick={addVariant}><Icon name="plus" size={16} />{tR("Add a serve option")}</button>
+      </div>
+      {addons && addons.length > 0 && (
+        <div className="field" style={{ marginTop: 14 }}>
+          <span className="field-label">{tR("Add-ons")} <span style={{ color: "var(--muted)", fontWeight: 500 }}>{tR("· extras offered for this item")}</span></span>
+          <div className="chip-grid">
+            {addons.map((a) => (
+              <button key={a.id} className={"chip" + (sel[a.id] ? " is-on" : "")} onClick={() => setSel((m) => ({ ...m, [a.id]: !m[a.id] }))}>{tnameR(a.name)} <span className="money">+{window.CafeData.THB(a.price)}</span></button>
+            ))}
+          </div>
+        </div>
+      )}
+    </Modal>
+  );
+}
+
+function CatalogView({ catalog, onSetPrice, savedItems, onSaveItem, onDeleteItem, onUpdateItem, addons, proteins, onSetAddonPrice, onSetProteinPrice }) {
   const { ALC_DISHES, FLAVORS } = window.CafeData;
   const [tab, setTab] = useStateR("Drinks");
   const [custom, setCustom] = useStateR(false);
   const [confirm, setConfirm] = useStateR(null); // item pending delete
+  const [editItem, setEditItem] = useStateR(null); // item being edited
   const tabs = ["Drinks", "Food", "Snacks", "À la carte", "Flavors", "Saved"];
 
   const menu = catalog.filter((c) => c.cat === tab);
@@ -216,8 +300,9 @@ function CatalogView({ catalog, onSetPrice, savedItems, onSaveItem, onDeleteItem
           {menu.map((it) => (
             <div key={it.id} className="cat-row">
               <span className="cr-ic"><Icon name={it.glyph || "dot"} size={20} /></span>
-              <span className="cr-nm">{tnameR(it.name)}{it.kind === "drink" && <em className="cr-tag">{tR("customisable")}</em>}{isSaved(it.id) && <span className="cr-group">{tR("added")}</span>}</span>
+              <button className="cr-nm cr-nm-btn" onClick={() => setEditItem(it)}>{tnameR(it.name)}{it.kind === "drink" && <em className="cr-tag">{tR("customisable")}</em>}{isSaved(it.id) && <span className="cr-group">{tR("added")}</span>}</button>
               <PriceEdit value={it.price} onSave={(p) => onSetPrice(it.id, p)} />
+              <button className="cr-edit" onClick={() => setEditItem(it)} aria-label="edit"><Icon name="edit" size={16} /></button>
               <button className="cr-del" onClick={() => setConfirm(it)} aria-label="delete"><Icon name="trash" size={16} /></button>
             </div>
           ))}
@@ -266,15 +351,17 @@ function CatalogView({ catalog, onSetPrice, savedItems, onSaveItem, onDeleteItem
           ? <EmptyState icon="catalog" title={tR("No saved items")} sub={tR("Custom items you save at the counter show up here.")} />
           : savedItems.map((it) => (
             <div key={it.id} className="cat-row">
-              <span className="cr-ic"><Icon name="dot" size={18} /></span>
-              <span className="cr-nm">{tnameR(it.name)}{it.group && <span className="cr-group">{tR(GROUP_LABEL[it.group])}</span>}</span>
+              <span className="cr-ic"><Icon name={it.glyph || "dot"} size={18} /></span>
+              <button className="cr-nm cr-nm-btn" onClick={() => setEditItem(it)}>{tnameR(it.name)}{it.group && <span className="cr-group">{tR(GROUP_LABEL[it.group])}</span>}</button>
               <PriceEdit value={it.price} onSave={(p) => onSetPrice(it.id, p)} />
+              <button className="cr-edit" onClick={() => setEditItem(it)} aria-label="edit"><Icon name="edit" size={16} /></button>
               <button className="cr-del" onClick={() => setConfirm(it)} aria-label="delete"><Icon name="trash" size={16} /></button>
             </div>
           )))}
       </div>
 
       {custom && <CustomModal onClose={() => setCustom(false)} onSave={(it) => onSaveItem(it)} saveOnly defaultGroup={TAB_GROUP[tab] || "food"} />}
+      {editItem && <ItemEditModal item={editItem} addons={addons} onClose={() => setEditItem(null)} onSave={onUpdateItem} />}
       {confirm && (
         <Modal open onClose={() => setConfirm(null)} title={tR("Remove item?")}
           footer={<><div className="spacer" /><Btn kind="ghost" onClick={() => setConfirm(null)}>{tR("Cancel")}</Btn><Btn kind="danger" icon="trash" onClick={() => { onDeleteItem(confirm.id); setConfirm(null); }}>{tR("Remove")}</Btn></>}>

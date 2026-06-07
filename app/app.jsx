@@ -222,6 +222,10 @@ function App() {
     try { await window.mlApi.deleteItem(id); setCatalog((c) => c.filter((x) => x.id !== id)); showToast(tA("Item removed")); }
     catch (e) { showErr(e); }
   }
+  async function updateItem(id, fields) {
+    setCatalog((c) => c.map((it) => it.id === id ? { ...it, ...fields, note: it.note } : it));
+    try { await window.mlApi.updateItem(id, fields); showToast(tA("Updated")); } catch (e) { showErr(e); }
+  }
   async function setPrice(id, price) {
     setCatalog((c) => c.map((it) => it.id === id ? { ...it, price } : it));
     try { await window.mlApi.setItemPrice(id, price); } catch (e) { showErr(e); }
@@ -318,7 +322,7 @@ function App() {
           {view === "tabs" && <TabsView ledger={ledger} onUpdate={update} />}
           {view === "customers" && <CustomersView customers={customers} onAddCustomer={addCustomer} onUpdateCustomer={updateCustomer} onDeleteCustomer={deleteCustomer} />}
           {view === "reports" && <ReportsView ledger={ledger} onToast={showToast} />}
-          {view === "catalog" && <CatalogView catalog={catalog} onSetPrice={setPrice} savedItems={savedItems} onSaveItem={saveItem} onDeleteItem={deleteItem} addons={addons} proteins={proteins} onSetAddonPrice={setAddonPrice} onSetProteinPrice={setProteinPrice} />}
+          {view === "catalog" && <CatalogView catalog={catalog} onSetPrice={setPrice} savedItems={savedItems} onSaveItem={saveItem} onDeleteItem={deleteItem} onUpdateItem={updateItem} addons={addons} proteins={proteins} onSetAddonPrice={setAddonPrice} onSetProteinPrice={setProteinPrice} />}
           {view === "settings" && <SettingsView lang={lang} setLang={setLang} staffList={staffList} current={staff} onAddStaff={addStaff} onDeleteStaff={deleteStaff} onSignOut={handleLogout} />}
         </main>
       </div>

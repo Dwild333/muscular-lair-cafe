@@ -106,6 +106,11 @@
     "Tap a price to edit · changes save to the cloud instantly": "แตะที่ราคาเพื่อแก้ไข · บันทึกขึ้นคลาวด์ทันที",
     "rice 150g included · tap a price to edit": "รวมข้าว 150 ก. · แตะที่ราคาเพื่อแก้ไข",
     "Edit customer": "แก้ไขลูกค้า", "Edit": "แก้ไข", "Delete": "ลบ",
+    "Edit item": "แก้ไขรายการ", "Save changes": "บันทึกการเปลี่ยนแปลง", "Icon": "ไอคอน",
+    "Flavor options": "ตัวเลือกรสชาติ", "· tap-to-pick at register": "· เลือกที่หน้าขาย",
+    "Serve options": "ตัวเลือกการเสิร์ฟ", "· e.g. Hot / Iced, each with its own price": "· เช่น ร้อน / เย็น ราคาแยกแต่ละแบบ",
+    "Label e.g. Iced": "ป้าย เช่น เย็น", "Add a serve option": "เพิ่มตัวเลือกการเสิร์ฟ",
+    "· extras offered for this item": "· ของเสริมสำหรับรายการนี้",
     // settings
     "Language": "ภาษา", "Appearance": "ลักษณะที่แสดง",
     "Switch the whole app between English and Thai. Item names and labels translate instantly.":

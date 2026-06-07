@@ -62,7 +62,7 @@
   const ALC_DISHES = [
     { id: "alc_broccoli", name: "Stir Fried with Broccoli" },
     { id: "alc_egg", name: "Stir Fried with Egg" },
-    { id: "alc_mushroom", name: "Mushroom with Oyster Sauce" },
+    { id: "alc_mushroom", name: "Mushrooms with Oyster Sauce" },
     { id: "alc_padcha", name: "Pad Cha (Thai Spicy)" },
     { id: "alc_green", name: "Stir Fried Green Curry" },
     { id: "alc_redcurry", name: "Stir Fried Red Curry Paste" },

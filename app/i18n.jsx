@@ -126,11 +126,11 @@
     "Chicken": "ไก่", "Pork": "หมู", "Beef": "เนื้อ", "Braised Beef": "เนื้อตุ๋น", "Shrimp": "กุ้ง",
     // data — à la carte dishes
     "Stir Fried with Broccoli": "ผัดบล็อกโคลี่", "Stir Fried with Egg": "ผัดไข่",
-    "Mushroom with Oyster Sauce": "ผัดเห็ดน้ำมันหอย", "Pad Cha (Thai Spicy)": "ผัดฉ่า",
+    "Mushrooms with Oyster Sauce": "ผัดเห็ดน้ำมันหอย", "Pad Cha (Thai Spicy)": "ผัดฉ่า",
     "Stir Fried Green Curry": "ผัดเขียวหวาน", "Stir Fried Red Curry Paste": "ผัดเผ็ด",
     "Stir Fried Chili Paste": "ผัดพริกเผา", "Stir Fried Sweet Pepper": "ผัดพริกสด",
-    "Stir Fried Ginger": "ผัดขิง", "Stir Fried Curry Powder": "ผัดผงกะหรี่",
-    "Stir Fried Garlic & Pepper": "ผัดกระเทียมพริกไทย", "Larb (Thai Spicy Salad)": "ลาบ", "Fried Rice": "ข้าวผัด",
+    "Stir Fried Ginger": "ผัดขิง", "Stir Fried Curry Powder": "ผัดผงกระหรี่",
+    "Stir Fried Garlic & Pepper": "ผัดกระเทียมพริกไทย", "Larb (Thai Spicy Salad)": "ข้าวลาบ", "Fried Rice": "ข้าวผัด",
   };
 
   function t(s) {

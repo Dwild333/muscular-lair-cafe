@@ -249,7 +249,8 @@
 .cs-add .cs-nm { font-weight: 600; color: var(--ink-2); }
 .cs-add .cs-nm b { color: var(--ink); }
 .flavor-edit-chip { display: inline-flex; align-items: center; gap: 7px; padding-right: 8px; }
-.flavor-edit-chip button { border: none; background: rgba(255,255,255,.25); color: inherit; width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center; cursor: pointer; }
+.flavor-edit-chip button { border: none; background: rgba(255,255,255,.25); color: inherit; width: 18px; height: 18px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; padding: 0; line-height: 0; cursor: pointer; flex-shrink: 0; }
+.flavor-edit-chip button svg { display: block; }
 .flavor-add { display: flex; gap: 8px; }
 .flavor-add .input { flex: 1; }
 .flavor-add .btn { flex-shrink: 0; width: var(--ctrl-h); padding: 0; }

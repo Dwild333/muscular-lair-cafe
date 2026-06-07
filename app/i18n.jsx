@@ -115,6 +115,9 @@
     // data — milk & tea flavors
     "Green Tea": "ชาเขียว", "Thai Tea": "ชาไทย", "Lemon Tea": "ชามะนาว",
     "Cocoa": "โกโก้", "Pink Milk": "นมชมพู", "Caramel Milk": "นมคาราเมล",
+    // data — add-ons
+    "Banana": "กล้วย", "Extra Whey Scoop": "เวย์เพิ่ม 1 ช้อน", "Extra Espresso Shot": "เพิ่มช็อตเอสเพรสโซ",
+    "tap to add — set the quantity": "แตะเพื่อเพิ่ม — กำหนดจำนวน",
     // data — food (kitchen)
     "Steamed Rice 150g": "ข้าวสวย 150 ก.", "Fried Egg": "ไข่ดาว",
     "Rice with Chicken Omelet": "ข้าวไข่เจียวไก่", "Rice with Pork Omelet": "ข้าวไข่เจียวหมูสับ",

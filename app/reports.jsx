@@ -20,6 +20,35 @@ function makeSeries(period) {
 
 const GROUP_LABEL = { drink: "Drinks", food: "Food", snack: "Snacks" };
 
+// ---- CSV export (downloads the real recorded transactions) ----------------
+function csvEscape(v) {
+  const s = String(v == null ? "" : v);
+  return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+function exportLedgerCSV(ledger, period) {
+  const STAFF = window.CafeData.STAFF;
+  const sName = (id) => (STAFF.find((s) => s.id === id) || {}).name || id;
+  const header = ["Time", "Logged by", "Customer", "Items", "Payment", "Status", "Total (THB)"];
+  const rows = ledger.map((e) => [
+    e.time, sName(e.staff), e.customer,
+    e.items.map((it) => `${it.name}${it.note ? " (" + it.note + ")" : ""}${it.qty > 1 ? " x" + it.qty : ""}`).join("; "),
+    e.method === "cash" ? "Cash" : "QR", e.status === "paid" ? "Paid" : "Open tab", e.total,
+  ]);
+  const gross = ledger.reduce((s, e) => s + e.total, 0);
+  rows.push([], ["", "", "", "", "", "TOTAL", gross]);
+  const csv = [header, ...rows].map((r) => r.map(csvEscape).join(",")).join("\r\n");
+  const d = new Date();
+  const stamp = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  const filename = `muscular-cafe-${period}-${stamp}.csv`;
+  const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  return filename;
+}
+
 function ReportsView({ ledger, onToast }) {
   const { THB, STAFF } = window.CafeData;
   const [period, setPeriod] = useStateR("day");
@@ -60,7 +89,7 @@ function ReportsView({ ledger, onToast }) {
         <div><h2>{tR("Summary & export")}</h2><div className="sub">{tR(meta.sub)}</div></div>
         <div className="spacer" />
         <Segmented value={period} onChange={setPeriod} options={PERIODS.map((p) => ({ value: p.value, label: tR(p.label) }))} />
-        <Btn kind="primary" icon="download" onClick={() => onToast(tR("Exported ") + tR(meta.exp))}>{tR("Export")}</Btn>
+        <Btn kind="primary" icon="download" onClick={() => { const fn = exportLedgerCSV(ledger, period); onToast(tR("Exported ") + fn); }}>{tR("Export")}</Btn>
       </div>
 
       <div className="rep-body">

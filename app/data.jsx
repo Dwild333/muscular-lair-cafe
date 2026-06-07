@@ -21,8 +21,13 @@
     // Milk & Tea · 16 oz · iced · ฿55
     "Milk & Tea": ["Green Tea", "Thai Tea", "Lemon Tea", "Cocoa", "Pink Milk", "Caramel Milk"],
   };
-  // No à la carte drink add-ons on the printed menu.
-  const ADDONS = [];
+  // Drink add-ons (quantity-based). Prices are editable placeholders — set
+  // the real ones in Catalog. Each drink lists which add-ons apply via `addons`.
+  const ADDONS = [
+    { id: "banana", name: "Banana", price: 15 },
+    { id: "whey", name: "Extra Whey Scoop", price: 30 },
+    { id: "shot", name: "Extra Espresso Shot", price: 20 },
+  ];
 
   // ---- Catalog -------------------------------------------------------------
   // kind: 'drink' (flavor and/or hot/iced variant), 'simple' (one-tap)
@@ -30,15 +35,15 @@
   const CATALOG = [
     // ---- Drinks ----
     { id: "d_amino", cat: "Drinks", group: "drink", name: "Amino Soda", price: 75, kind: "drink", glyph: "drop", note: "0 cal" },
-    { id: "d_smoothie", cat: "Drinks", group: "drink", name: "Muscular Smoothie", price: 85, kind: "drink", glyph: "cup" },
-    { id: "d_whey", cat: "Drinks", group: "drink", name: "Whey Protein", price: 70, kind: "simple", glyph: "shake" },
-    { id: "d_pre", cat: "Drinks", group: "drink", name: "Pre-Workout", price: 75, kind: "simple", glyph: "bolt" },
-    { id: "d_espresso", cat: "Drinks", group: "drink", name: "Espresso", price: 45, kind: "simple", glyph: "coffee", note: "Hot" },
-    { id: "d_black", cat: "Drinks", group: "drink", name: "Black Coffee", price: 45, kind: "drink", glyph: "coffee", variants: [{ label: "Hot", price: 45 }, { label: "Iced", price: 55 }] },
-    { id: "d_capp", cat: "Drinks", group: "drink", name: "Cappuccino", price: 50, kind: "drink", glyph: "coffee", variants: [{ label: "Hot", price: 50 }, { label: "Iced", price: 60 }] },
-    { id: "d_latte", cat: "Drinks", group: "drink", name: "Latte", price: 50, kind: "drink", glyph: "coffee", variants: [{ label: "Hot", price: 50 }, { label: "Iced", price: 60 }] },
-    { id: "d_mocha", cat: "Drinks", group: "drink", name: "Mocha", price: 50, kind: "drink", glyph: "coffee", variants: [{ label: "Hot", price: 50 }, { label: "Iced", price: 60 }] },
-    { id: "d_caramelmac", cat: "Drinks", group: "drink", name: "Caramel Macchiato", price: 75, kind: "simple", glyph: "coffee", note: "Iced" },
+    { id: "d_smoothie", cat: "Drinks", group: "drink", name: "Muscular Smoothie", price: 85, kind: "drink", glyph: "cup", addons: ["banana", "whey"] },
+    { id: "d_whey", cat: "Drinks", group: "drink", name: "Whey Protein", price: 70, kind: "drink", glyph: "shake", addons: ["banana", "whey"] },
+    { id: "d_pre", cat: "Drinks", group: "drink", name: "Pre-Workout", price: 75, kind: "drink", glyph: "bolt", addons: ["banana", "whey"] },
+    { id: "d_espresso", cat: "Drinks", group: "drink", name: "Espresso", price: 45, kind: "drink", glyph: "coffee", note: "Hot", addons: ["shot"] },
+    { id: "d_black", cat: "Drinks", group: "drink", name: "Black Coffee", price: 45, kind: "drink", glyph: "coffee", variants: [{ label: "Hot", price: 45 }, { label: "Iced", price: 55 }], addons: ["shot"] },
+    { id: "d_capp", cat: "Drinks", group: "drink", name: "Cappuccino", price: 50, kind: "drink", glyph: "coffee", variants: [{ label: "Hot", price: 50 }, { label: "Iced", price: 60 }], addons: ["shot"] },
+    { id: "d_latte", cat: "Drinks", group: "drink", name: "Latte", price: 50, kind: "drink", glyph: "coffee", variants: [{ label: "Hot", price: 50 }, { label: "Iced", price: 60 }], addons: ["shot"] },
+    { id: "d_mocha", cat: "Drinks", group: "drink", name: "Mocha", price: 50, kind: "drink", glyph: "coffee", variants: [{ label: "Hot", price: 50 }, { label: "Iced", price: 60 }], addons: ["shot"] },
+    { id: "d_caramelmac", cat: "Drinks", group: "drink", name: "Caramel Macchiato", price: 75, kind: "drink", glyph: "coffee", note: "Iced", addons: ["shot"] },
     { id: "d_milktea", cat: "Drinks", group: "drink", name: "Milk & Tea", price: 55, kind: "drink", glyph: "cup" },
 
     // ---- Food (kitchen — fixed plates, rice & spaghetti, soups) ----

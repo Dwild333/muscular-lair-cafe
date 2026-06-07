@@ -12,20 +12,21 @@ function DrinkModal({ item, onClose, onAdd }) {
   const { FLAVORS, ADDONS, THB } = window.CafeData;
   const flavors = item.flavors || FLAVORS[item.name] || null;
   const variants = item.variants || null;
+  const addonDefs = (item.addons || []).map((id) => ADDONS.find((a) => a.id === id)).filter(Boolean);
   const [variant, setVariant] = useStateP(variants ? variants[0] : null);
   const [flavor, setFlavor] = useStateP(flavors ? flavors[0] : null);
-  const [addons, setAddons] = useStateP({});
+  const [addons, setAddons] = useStateP({}); // { addonId: count }
   const [qty, setQty] = useStateP(1);
-  const toggle = (a) => setAddons((m) => ({ ...m, [a.id]: !m[a.id] }));
-  const addOnList = ADDONS.filter((a) => addons[a.id]);
+  const setAddonQ = (id, q) => setAddons((m) => ({ ...m, [id]: Math.max(0, q) }));
+  const addOnList = addonDefs.filter((a) => (addons[a.id] || 0) > 0);
   const base = variant ? variant.price : item.price;
-  const unit = base + addOnList.reduce((s, a) => s + a.price, 0);
+  const unit = base + addOnList.reduce((s, a) => s + a.price * addons[a.id], 0);
 
   function commit() {
     const name = item.name
       + (variant ? " · " + variant.label : "")
       + (flavor ? " · " + flavor : "");
-    const note = addOnList.length ? addOnList.map((a) => "+ " + a.name).join("  ") : "";
+    const note = addOnList.map((a) => "+ " + a.name + (addons[a.id] > 1 ? " ×" + addons[a.id] : "")).join("  ");
     onAdd({ uid: lineUid(), name, note, price: unit, qty, base: item.id, group: item.group || "drink" });
     onClose();
   }
@@ -60,17 +61,22 @@ function DrinkModal({ item, onClose, onAdd }) {
           </div>
         </div>
       )}
-      {ADDONS.length > 0 && (
+      {addonDefs.length > 0 && (
         <div className="cust-block">
-          <div className="cust-label">{t("Add-ons")} <span className="cust-hint">{t("tap to include")}</span></div>
+          <div className="cust-label">{t("Add-ons")} <span className="cust-hint">{t("tap to add — set the quantity")}</span></div>
           <div className="addon-grid">
-            {ADDONS.map((a) => (
-              <button key={a.id} className={"addon" + (addons[a.id] ? " is-on" : "")} onClick={() => toggle(a)}>
-                <span className="addon-check"><Icon name="check" size={14} /></span>
-                <span className="addon-nm">{t(a.name)}</span>
-                <span className="addon-pr money">+{THB(a.price)}</span>
-              </button>
-            ))}
+            {addonDefs.map((a) => {
+              const q = addons[a.id] || 0;
+              return (
+                <div key={a.id} className={"addon" + (q > 0 ? " is-on" : "")}>
+                  <span className="addon-nm">{t(a.name)}</span>
+                  <span className="addon-pr money">+{THB(a.price)}</span>
+                  {q > 0
+                    ? <Stepper value={q} onChange={(v) => setAddonQ(a.id, v)} min={0} />
+                    : <button className="addon-add" onClick={() => setAddonQ(a.id, 1)} aria-label="add"><Icon name="plus" size={15} /></button>}
+                </div>
+              );
+            })}
           </div>
         </div>
       )}

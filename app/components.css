@@ -12,8 +12,8 @@
 .pos-grid-wrap { flex: 1; overflow: auto; padding: var(--pad); }
 .tile-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: var(--gap); }
 .tile {
-  height: var(--tile-h); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
-  display: flex; flex-direction: column; align-items: flex-start; justify-content: space-between; padding: 14px;
+  min-height: var(--tile-h); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  display: flex; flex-direction: column; align-items: flex-start; justify-content: space-between; gap: 8px; padding: 14px;
   cursor: pointer; text-align: left; position: relative; transition: transform .1s, border-color .12s, box-shadow .12s;
 }
 .tile:hover { border-color: var(--primary); box-shadow: var(--shadow); transform: translateY(-1px); }
@@ -35,14 +35,13 @@
 .chip:hover { border-color: var(--ink-2); }
 .chip.is-on { background: var(--primary); color: var(--primary-ink); border-color: var(--primary); }
 .chip-mini { padding: 4px 10px; font-size: 12px; }
-.addon-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
-.addon { display: flex; align-items: center; gap: 10px; border: 1px solid var(--line); background: var(--surface-2); border-radius: 11px; padding: 11px 13px; cursor: pointer; font-family: inherit; text-align: left; }
-.addon:hover { border-color: var(--ink-2); }
-.addon-check { width: 20px; height: 20px; border-radius: 6px; border: 1.5px solid var(--line); display: grid; place-items: center; color: transparent; flex-shrink: 0; }
+.addon-grid { display: grid; grid-template-columns: 1fr; gap: 8px; }
+.addon { display: flex; align-items: center; gap: 10px; border: 1px solid var(--line); background: var(--surface-2); border-radius: 11px; padding: 9px 11px 9px 13px; font-family: inherit; text-align: left; }
 .addon.is-on { border-color: var(--primary); background: var(--primary-soft); }
-.addon.is-on .addon-check { background: var(--primary); border-color: var(--primary); color: var(--primary-ink); }
-.addon-nm { flex: 1; font-weight: 600; font-size: 13.5px; color: var(--ink); }
-.addon-pr { color: var(--muted); font-weight: 700; font-size: 12.5px; }
+.addon-nm { flex: 1; min-width: 0; font-weight: 600; font-size: 13.5px; color: var(--ink); }
+.addon-pr { color: var(--muted); font-weight: 700; font-size: 12.5px; flex-shrink: 0; }
+.addon-add { width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--primary); cursor: pointer; display: grid; place-items: center; flex-shrink: 0; }
+.addon-add:hover { background: var(--primary-soft); border-color: transparent; }
 .modal-total { color: var(--muted); font-size: 13px; }
 .modal-total b { color: var(--ink); font-size: 17px; margin-left: 6px; }
 

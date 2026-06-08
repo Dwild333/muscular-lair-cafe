@@ -112,6 +112,13 @@
     "Tap a price to edit · changes save to the cloud instantly": "แตะที่ราคาเพื่อแก้ไข · บันทึกขึ้นคลาวด์ทันที",
     "rice 150g included · tap a price to edit": "รวมข้าว 150 ก. · แตะที่ราคาเพื่อแก้ไข",
     "Edit customer": "แก้ไขลูกค้า", "Edit": "แก้ไข", "Delete": "ลบ",
+    // discounts + coupons
+    "Discount": "ส่วนลด", "Custom": "กำหนดเอง", "Custom discount": "ส่วนลดกำหนดเอง",
+    "Apply discount": "ใช้ส่วนลด", "Percent %": "เปอร์เซ็นต์ %", "Amount ฿": "จำนวนเงิน ฿",
+    "Percent off": "ลดกี่เปอร์เซ็นต์", "Baht off": "ลดกี่บาท", "Subtotal": "ยอดรวมย่อย",
+    "Coupons": "คูปอง", "New coupon": "คูปองใหม่", "Edit coupon": "แก้ไขคูปอง", "Add coupon": "เพิ่มคูปอง",
+    "Coupon name": "ชื่อคูปอง", "Add a coupon": "เพิ่มคูปอง", "Coupon removed": "ลบคูปองแล้ว",
+    "No coupons yet": "ยังไม่มีคูปอง", "Add a quick discount staff can tap at the register.": "เพิ่มส่วนลดด่วนที่พนักงานแตะใช้ได้ที่หน้าขาย", "off": "ลด",
     "Edit item": "แก้ไขรายการ", "Save changes": "บันทึกการเปลี่ยนแปลง", "Icon": "ไอคอน",
     "Flavor options": "ตัวเลือกรสชาติ", "· tap-to-pick at register": "· เลือกที่หน้าขาย",
     "Serve options": "ตัวเลือกการเสิร์ฟ", "· e.g. Hot / Iced, each with its own price": "· เช่น ร้อน / เย็น ราคาแยกแต่ละแบบ",

@@ -22,7 +22,9 @@
   const mapSale = (r) => ({
     id: r.id, ts: r.ts, time: r.time, staff: r.staff, customer: r.customer,
     items: r.items || [], total: num(r.total), method: r.method, status: r.status,
+    discount: num(r.discount), discountLabel: r.discount_label || undefined,
   });
+  const mapCoupon = (r) => ({ id: r.id, name: r.name, type: r.type, value: num(r.value), sort: r.sort });
   const mapCustomer = (r) => ({
     id: r.id, name: r.name, tag: r.tag, color: r.color, visits: r.visits || 0,
     spend: num(r.spend), split: r.split || [50, 40, 10], top: r.top || [],
@@ -64,22 +66,24 @@
       sb.from("ml_alc_proteins").select("*").order("sort"),
       sb.from("ml_customers").select("*").order("name"),
       sb.from("ml_sales").select("*").order("ts"),
+      sb.from("ml_coupons").select("*").order("sort"),
     ]);
     const bad = r.find((x) => x.error);
     if (bad && bad.error) throw bad.error;
-    const [staff, catalog, addons, dishes, proteins, customers, sales] = r.map((x) => x.data);
+    const [staff, catalog, addons, dishes, proteins, customers, sales, coupons] = r.map((x) => x.data);
     return {
       staff, addons, dishes,
       catalog: catalog.map(mapItem),
       proteins: proteins.map(mapProtein),
       customers: customers.map(mapCustomer),
       sales: sales.map(mapSale),
+      coupons: (coupons || []).map(mapCoupon),
     };
   }
 
   // ---- sales ----
   async function addSale(entry) {
-    const row = { time: entry.time, staff: entry.staff, customer: entry.customer, items: entry.items, total: entry.total, method: entry.method, status: entry.status };
+    const row = { time: entry.time, staff: entry.staff, customer: entry.customer, items: entry.items, total: entry.total, method: entry.method, status: entry.status, discount: entry.discount || 0, discount_label: entry.discountLabel || null };
     const { data, error } = await sb.from("ml_sales").insert(row).select().single();
     if (error) throw error; return mapSale(data);
   }
@@ -114,6 +118,11 @@
   async function updateCustomer(id, fields) { const { data, error } = await sb.from("ml_customers").update(fields).eq("id", id).select().single(); if (error) throw error; return mapCustomer(data); }
   async function deleteCustomer(id) { const { error } = await sb.from("ml_customers").delete().eq("id", id); if (error) throw error; }
 
+  // ---- coupons ----
+  async function addCoupon(c) { const { data, error } = await sb.from("ml_coupons").insert(c).select().single(); if (error) throw error; return mapCoupon(data); }
+  async function updateCoupon(id, fields) { const { data, error } = await sb.from("ml_coupons").update(fields).eq("id", id).select().single(); if (error) throw error; return mapCoupon(data); }
+  async function deleteCoupon(id) { const { error } = await sb.from("ml_coupons").delete().eq("id", id); if (error) throw error; }
+
   window.mlAuth = auth;
   window.mlApi = {
     loadAll, addSale, updateSale,
@@ -121,5 +130,6 @@
     setAddonPrice, setProteinWeights,
     addStaff, deleteStaff,
     addCustomer, updateCustomer, deleteCustomer,
+    addCoupon, updateCoupon, deleteCoupon,
   };
 })();

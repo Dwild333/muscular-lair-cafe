@@ -400,3 +400,17 @@
 /* ---- Settings: password form ---- */
 .pw-form { display: flex; flex-direction: column; gap: 12px; max-width: 360px; }
 .pw-form .btn-primary { align-self: flex-start; }
+
+/* ---- Ticket discounts / coupons ---- */
+.disc-block { display: flex; flex-direction: column; gap: 7px; }
+.disc-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip-disc { padding: 6px 12px; font-size: 12.5px; }
+.chip-disc .disc-val { opacity: .7; font-weight: 700; margin-left: 3px; }
+.chip-disc.is-on .disc-val { opacity: 1; }
+.chip-custom { display: inline-flex; align-items: center; gap: 4px; }
+.sum-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 13.5px; color: var(--muted); }
+.sum-row .money { color: var(--ink); font-weight: 600; }
+.sum-disc { color: var(--primary); }
+.sum-disc .money { color: var(--primary); }
+.sum-disc-nm { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sum-disc .line-x:hover { background: var(--primary-soft); color: var(--primary-soft-ink); }

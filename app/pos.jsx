@@ -285,12 +285,47 @@ function CustomerInput({ value, onChange, customers, onAddCustomer }) {
   );
 }
 
+// ---------- Discounts ------------------------------------------------------
+function discAmount(disc, subtotal) {
+  if (!disc) return 0;
+  const a = disc.type === "percent" ? Math.round(subtotal * disc.value / 100) : disc.value;
+  return Math.max(0, Math.min(a, subtotal));
+}
+
+function CustomDiscountModal({ onClose, onApply }) {
+  const [type, setType] = useStateP("percent");
+  const [val, setVal] = useStateP("");
+  const valid = Number(val) > 0;
+  function apply() {
+    const v = Number(val);
+    onApply({ label: type === "percent" ? v + "% off" : "฿" + v + " off", type, value: v });
+    onClose();
+  }
+  return (
+    <Modal open onClose={onClose} title={t("Custom discount")}
+      footer={<><div className="spacer" /><Btn kind="primary" icon="check" disabled={!valid} onClick={apply}>{t("Apply discount")}</Btn></>}>
+      <div className="field">
+        <span className="field-label">{t("Type")}</span>
+        <Segmented full value={type} onChange={setType} options={[{ value: "percent", label: t("Percent %") }, { value: "amount", label: t("Amount ฿") }]} />
+      </div>
+      <div className="field" style={{ marginTop: 14 }}>
+        <span className="field-label">{type === "percent" ? t("Percent off") : t("Baht off")}</span>
+        <input className="input" type="number" inputMode="numeric" autoFocus value={val} onChange={(e) => setVal(e.target.value)} placeholder={type === "percent" ? "10" : "20"} />
+      </div>
+    </Modal>
+  );
+}
+
 // ---------- Ticket panel ---------------------------------------------------
-function Ticket({ staff, cart, setCart, customer, setCustomer, method, setMethod, status, setStatus, onCommit, customers, onAddCustomer }) {
+function Ticket({ staff, cart, setCart, customer, setCustomer, method, setMethod, status, setStatus, onCommit, customers, onAddCustomer, coupons, discount, setDiscount }) {
   const { THB } = window.CafeData;
-  const total = cart.reduce((s, l) => s + l.price * l.qty, 0);
+  const [customDisc, setCustomDisc] = useStateP(false);
+  const subtotal = cart.reduce((s, l) => s + l.price * l.qty, 0);
+  const discAmt = discAmount(discount, subtotal);
+  const total = Math.max(0, subtotal - discAmt);
   const setQty = (uid, q) => setCart((c) => q <= 0 ? c.filter((l) => l.uid !== uid) : c.map((l) => l.uid === uid ? { ...l, qty: q } : l));
   const remove = (uid) => setCart((c) => c.filter((l) => l.uid !== uid));
+  const applyCoupon = (c) => setDiscount((d) => (d && d.id === c.id) ? null : { id: c.id, label: c.name, type: c.type, value: c.value });
 
   return (
     <aside className="ticket">
@@ -333,27 +368,46 @@ function Ticket({ staff, cart, setCart, customer, setCustomer, method, setMethod
               options={[{ value: "paid", label: t("Paid"), icon: "check" }, { value: "open", label: t("Open tab"), icon: "clock" }]} />
           </div>
         </div>
+        {cart.length > 0 && (
+          <div className="disc-block">
+            <span className="pay-lbl">{t("Discount")}</span>
+            <div className="disc-chips">
+              {coupons.map((c) => (
+                <button key={c.id} className={"chip chip-disc" + (discount && discount.id === c.id ? " is-on" : "")} onClick={() => applyCoupon(c)}>
+                  {tname(c.name)} <span className="disc-val">{c.type === "percent" ? c.value + "%" : "-" + THB(c.value)}</span>
+                </button>
+              ))}
+              <button className={"chip chip-disc chip-custom" + (discount && !discount.id ? " is-on" : "")} onClick={() => setCustomDisc(true)}><Icon name="plus" size={13} />{t("Custom")}</button>
+            </div>
+          </div>
+        )}
+        {discAmt > 0 && (<>
+          <div className="sum-row"><span>{t("Subtotal")}</span><span className="money">{THB(subtotal)}</span></div>
+          <div className="sum-row sum-disc"><span className="sum-disc-nm">{tname(discount.label)}</span><span className="money">−{THB(discAmt)}</span><button className="line-x" onClick={() => setDiscount(null)} aria-label="remove"><Icon name="x" size={14} /></button></div>
+        </>)}
         <div className="total-row">
           <span>{t("Total")}</span>
           <b className="money total-amt">{THB(total)}</b>
         </div>
         <Btn kind="primary" size="lg" full icon="check" disabled={!cart.length}
-          onClick={() => onCommit({ total })}>
+          onClick={() => onCommit({ total, discount: discAmt, discountLabel: discAmt > 0 ? discount.label : null })}>
           {status === "open" ? t("Save open tab") : (method === "cash" ? t("Save & take cash") : t("Save & confirm QR"))}
         </Btn>
       </div>
+      {customDisc && <CustomDiscountModal onClose={() => setCustomDisc(false)} onApply={(d) => setDiscount(d)} />}
     </aside>
   );
 }
 
 // ---------- POS view -------------------------------------------------------
-function POSView({ staff, onCommit, savedItems, onSaveItem, customers, catalog, onAddCustomer }) {
+function POSView({ staff, onCommit, savedItems, onSaveItem, customers, catalog, onAddCustomer, coupons }) {
   const { CATS } = window.CafeData;
   const [cat, setCat] = useStateP("Drinks");
   const [cart, setCart] = useStateP([]);
   const [customer, setCustomer] = useStateP("");
   const [method, setMethod] = useStateP("cash");
   const [status, setStatus] = useStateP("paid");
+  const [discount, setDiscount] = useStateP(null);
   const [drink, setDrink] = useStateP(null);
   const [custom, setCustom] = useStateP(false);
 
@@ -367,16 +421,16 @@ function POSView({ staff, onCommit, savedItems, onSaveItem, customers, catalog, 
     else add({ uid: lineUid(), name: it.name, note: "", price: it.price, qty: 1, base: it.id, group: it.group });
   };
 
-  function commit({ total }) {
+  function commit({ total, discount: discAmt, discountLabel }) {
     const now = new Date();
     onCommit({
       id: window.CafeData.uid(), staff: staff.id,
       time: window.CafeData.fmtTime(now),
       customer: customer.trim() || "Walk-in",
       items: cart.map((l) => ({ name: l.name, qty: l.qty, price: l.price, note: l.note, group: l.group })),
-      total, method, status,
+      total, method, status, discount: discAmt || 0, discountLabel: discountLabel || null,
     });
-    setCart([]); setCustomer(""); setMethod("cash"); setStatus("paid");
+    setCart([]); setCustomer(""); setMethod("cash"); setStatus("paid"); setDiscount(null);
   }
 
   const tiles = cat === "Saved" ? savedItems : catalog.filter((c) => c.cat === cat);
@@ -405,7 +459,7 @@ function POSView({ staff, onCommit, savedItems, onSaveItem, customers, catalog, 
 
       <Ticket staff={staff} cart={cart} setCart={setCart} customer={customer} setCustomer={setCustomer}
         method={method} setMethod={setMethod} status={status} setStatus={setStatus} onCommit={commit}
-        customers={customers} onAddCustomer={onAddCustomer} />
+        customers={customers} onAddCustomer={onAddCustomer} coupons={coupons} discount={discount} setDiscount={setDiscount} />
 
       {drink && <DrinkModal item={drink} onClose={() => setDrink(null)} onAdd={add} />}
       {custom && <CustomModal onClose={() => setCustom(false)} onAdd={add} onSave={onSaveItem} />}

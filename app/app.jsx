@@ -176,6 +176,7 @@ function App() {
   const [dishes, setDishes] = useStateA([]);
   const [proteins, setProteins] = useStateA([]);
   const [customers, setCustomers] = useStateA([]);
+  const [coupons, setCoupons] = useStateA([]);
   const [toast, setToast] = useStateA(null);
   const [clock, setClock] = useStateA(new Date());
 
@@ -187,7 +188,7 @@ function App() {
     const d = await window.mlApi.loadAll();
     setStaffList(d.staff); setStaff((cur) => cur || d.staff[0] || null);
     setCatalog(d.catalog); setAddons(d.addons); setDishes(d.dishes);
-    setProteins(d.proteins); setCustomers(d.customers); setLedger(d.sales);
+    setProteins(d.proteins); setCustomers(d.customers); setLedger(d.sales); setCoupons(d.coupons || []);
   }
 
   useEffectA(() => {
@@ -216,7 +217,7 @@ function App() {
   catalog.forEach((c) => { if (c.flavors && c.flavors.length) flavorsMap[c.name] = c.flavors; });
   Object.assign(window.CafeData, {
     STAFF: staffList, CATALOG: catalog, ADDONS: addons,
-    ALC_DISHES: dishes, ALC_PROTEINS: proteins, CUSTOMERS: customers, FLAVORS: flavorsMap,
+    ALC_DISHES: dishes, ALC_PROTEINS: proteins, CUSTOMERS: customers, FLAVORS: flavorsMap, COUPONS: coupons,
   });
   const savedItems = catalog.filter((c) => c.added);
 
@@ -297,6 +298,18 @@ function App() {
     try { await window.mlApi.deleteStaff(s.id); setStaffList((l) => l.filter((x) => x.id !== s.id)); showToast(tA("Staff removed")); }
     catch (e) { showErr(e); }
   }
+  async function addCoupon(c) {
+    try { const saved = await window.mlApi.addCoupon({ ...c, id: "co" + Date.now(), sort: coupons.length }); setCoupons((l) => [...l, saved]); showToast(tA("Saved · ") + saved.name); }
+    catch (e) { showErr(e); }
+  }
+  async function updateCoupon(id, fields) {
+    setCoupons((l) => l.map((c) => c.id === id ? { ...c, ...fields } : c));
+    try { await window.mlApi.updateCoupon(id, fields); showToast(tA("Updated")); } catch (e) { showErr(e); }
+  }
+  async function deleteCoupon(id) {
+    try { await window.mlApi.deleteCoupon(id); setCoupons((l) => l.filter((c) => c.id !== id)); showToast(tA("Coupon removed")); }
+    catch (e) { showErr(e); }
+  }
 
   const openTabs = ledger.filter((e) => e.status === "open").length;
 
@@ -346,12 +359,12 @@ function App() {
         </nav>
 
         <main className="view">
-          {view === "pos" && <POSView staff={staff} onCommit={commit} savedItems={savedItems} onSaveItem={saveItem} customers={customers} catalog={catalog} onAddCustomer={addCustomer} />}
+          {view === "pos" && <POSView staff={staff} onCommit={commit} savedItems={savedItems} onSaveItem={saveItem} customers={customers} catalog={catalog} onAddCustomer={addCustomer} coupons={coupons} />}
           {view === "ledger" && <LedgerView ledger={ledger} onUpdate={update} />}
           {view === "tabs" && <TabsView ledger={ledger} onUpdate={update} />}
           {view === "customers" && <CustomersView customers={customers} onAddCustomer={addCustomer} onUpdateCustomer={updateCustomer} onDeleteCustomer={deleteCustomer} />}
           {view === "reports" && <ReportsView ledger={ledger} onToast={showToast} />}
-          {view === "catalog" && <CatalogView catalog={catalog} onSetPrice={setPrice} savedItems={savedItems} onSaveItem={saveItem} onDeleteItem={deleteItem} onUpdateItem={updateItem} addons={addons} proteins={proteins} onSetAddonPrice={setAddonPrice} onSetProteinPrice={setProteinPrice} />}
+          {view === "catalog" && <CatalogView catalog={catalog} onSetPrice={setPrice} savedItems={savedItems} onSaveItem={saveItem} onDeleteItem={deleteItem} onUpdateItem={updateItem} addons={addons} proteins={proteins} onSetAddonPrice={setAddonPrice} onSetProteinPrice={setProteinPrice} coupons={coupons} onAddCoupon={addCoupon} onUpdateCoupon={updateCoupon} onDeleteCoupon={deleteCoupon} />}
           {view === "settings" && <SettingsView lang={lang} setLang={setLang} staffList={staffList} current={staff} onAddStaff={addStaff} onDeleteStaff={deleteStaff} onSignOut={handleLogout} onToast={showToast} />}
         </main>
       </div>

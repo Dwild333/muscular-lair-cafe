@@ -28,14 +28,15 @@ function csvEscape(v) {
 function exportLedgerCSV(ledger, period) {
   const STAFF = window.CafeData.STAFF;
   const sName = (id) => (STAFF.find((s) => s.id === id) || {}).name || id;
-  const header = ["Time", "Logged by", "Customer", "Items", "Payment", "Status", "Total (THB)"];
+  const header = ["Time", "Logged by", "Customer", "Items", "Payment", "Status", "Discount (THB)", "Total (THB)"];
   const rows = ledger.map((e) => [
     e.time, sName(e.staff), e.customer,
     e.items.map((it) => `${it.name}${it.note ? " (" + it.note + ")" : ""}${it.qty > 1 ? " x" + it.qty : ""}`).join("; "),
-    e.method === "cash" ? "Cash" : "QR", e.status === "paid" ? "Paid" : "Open tab", e.total,
+    e.method === "cash" ? "Cash" : "QR", e.status === "paid" ? "Paid" : "Open tab",
+    (e.discount || 0) + (e.discountLabel ? " (" + e.discountLabel + ")" : ""), e.total,
   ]);
   const gross = ledger.reduce((s, e) => s + e.total, 0);
-  rows.push([], ["", "", "", "", "", "TOTAL", gross]);
+  rows.push([], ["", "", "", "", "", "TOTAL", "", gross]);
   const csv = [header, ...rows].map((r) => r.map(csvEscape).join(",")).join("\r\n");
   const d = new Date();
   const stamp = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -276,13 +277,36 @@ function ItemEditModal({ item, addons, onClose, onSave }) {
   );
 }
 
-function CatalogView({ catalog, onSetPrice, savedItems, onSaveItem, onDeleteItem, onUpdateItem, addons, proteins, onSetAddonPrice, onSetProteinPrice }) {
+function CouponEditModal({ coupon, onClose, onSave }) {
+  const isNew = !coupon;
+  const [name, setName] = useStateR(coupon ? coupon.name : "");
+  const [type, setType] = useStateR(coupon ? coupon.type : "percent");
+  const [value, setValue] = useStateR(coupon ? String(coupon.value) : "");
+  const valid = name.trim() && Number(value) > 0;
+  return (
+    <Modal open onClose={onClose} title={isNew ? tR("New coupon") : tR("Edit coupon")}
+      footer={<><div className="spacer" /><Btn kind="ghost" onClick={onClose}>{tR("Cancel")}</Btn><Btn kind="primary" icon="check" disabled={!valid} onClick={() => { onSave(isNew ? null : coupon.id, { name: name.trim(), type, value: Number(value) }); onClose(); }}>{isNew ? tR("Add coupon") : tR("Save changes")}</Btn></>}>
+      <Field label={tR("Coupon name")}><input className="input" autoFocus value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. ML Coupon" /></Field>
+      <div className="field" style={{ marginTop: 14 }}>
+        <span className="field-label">{tR("Type")}</span>
+        <Segmented full value={type} onChange={setType} options={[{ value: "percent", label: tR("Percent %") }, { value: "amount", label: tR("Amount ฿") }]} />
+      </div>
+      <div className="field" style={{ marginTop: 14 }}>
+        <span className="field-label">{type === "percent" ? tR("Percent off") : tR("Baht off")}</span>
+        <input className="input" type="number" inputMode="numeric" value={value} onChange={(e) => setValue(e.target.value)} placeholder={type === "percent" ? "10" : "20"} />
+      </div>
+    </Modal>
+  );
+}
+
+function CatalogView({ catalog, onSetPrice, savedItems, onSaveItem, onDeleteItem, onUpdateItem, addons, proteins, onSetAddonPrice, onSetProteinPrice, coupons, onAddCoupon, onUpdateCoupon, onDeleteCoupon }) {
   const { ALC_DISHES, FLAVORS } = window.CafeData;
   const [tab, setTab] = useStateR("Drinks");
   const [custom, setCustom] = useStateR(false);
   const [confirm, setConfirm] = useStateR(null); // item pending delete
   const [editItem, setEditItem] = useStateR(null); // item being edited
-  const tabs = ["Drinks", "Food", "Snacks", "À la carte", "Flavors", "Saved"];
+  const [couponEdit, setCouponEdit] = useStateR(null); // coupon being edited or 'new'
+  const tabs = ["Drinks", "Food", "Snacks", "À la carte", "Flavors", "Coupons", "Saved"];
 
   const menu = catalog.filter((c) => c.cat === tab);
   const TAB_GROUP = { Drinks: "drink", Food: "food", Snacks: "snack" };
@@ -352,6 +376,19 @@ function CatalogView({ catalog, onSetPrice, savedItems, onSaveItem, onDeleteItem
           ))}
         </>)}
 
+        {tab === "Coupons" && (<>
+          {coupons.map((c) => (
+            <div key={c.id} className="cat-row">
+              <span className="cr-ic"><Icon name="star" size={18} /></span>
+              <button className="cr-nm cr-nm-btn" onClick={() => setCouponEdit(c)}>{tnameR(c.name)} <span className="cr-group">{c.type === "percent" ? c.value + "%" : window.CafeData.THB(c.value) + " " + tR("off")}</span></button>
+              <button className="cr-edit" onClick={() => setCouponEdit(c)} aria-label="edit"><Icon name="edit" size={16} /></button>
+              <button className="cr-del" onClick={() => onDeleteCoupon(c.id)} aria-label="delete"><Icon name="trash" size={16} /></button>
+            </div>
+          ))}
+          {coupons.length === 0 && <EmptyState icon="catalog" title={tR("No coupons yet")} sub={tR("Add a quick discount staff can tap at the register.")} />}
+          <button className="cat-add-row" onClick={() => setCouponEdit("new")}><Icon name="plus" size={18} />{tR("Add a coupon")}</button>
+        </>)}
+
         {tab === "Saved" && (savedItems.length === 0
           ? <EmptyState icon="catalog" title={tR("No saved items")} sub={tR("Custom items you save at the counter show up here.")} />
           : savedItems.map((it) => (
@@ -367,6 +404,7 @@ function CatalogView({ catalog, onSetPrice, savedItems, onSaveItem, onDeleteItem
 
       {custom && <CustomModal onClose={() => setCustom(false)} onSave={(it) => onSaveItem(it)} saveOnly defaultGroup={TAB_GROUP[tab] || "food"} />}
       {editItem && <ItemEditModal item={editItem} addons={addons} onClose={() => setEditItem(null)} onSave={onUpdateItem} />}
+      {couponEdit && <CouponEditModal coupon={couponEdit === "new" ? null : couponEdit} onClose={() => setCouponEdit(null)} onSave={(id, fields) => id ? onUpdateCoupon(id, fields) : onAddCoupon(fields)} />}
       {confirm && (
         <Modal open onClose={() => setConfirm(null)} title={tR("Remove item?")}
           footer={<><div className="spacer" /><Btn kind="ghost" onClick={() => setConfirm(null)}>{tR("Cancel")}</Btn><Btn kind="danger" icon="trash" onClick={() => { onDeleteItem(confirm.id); setConfirm(null); }}>{tR("Remove")}</Btn></>}>

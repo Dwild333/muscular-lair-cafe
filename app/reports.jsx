@@ -50,28 +50,33 @@ function exportLedgerCSV(ledger, period) {
 }
 
 function ReportsView({ ledger, onToast }) {
-  const { THB, STAFF } = window.CafeData;
+  const { THB, STAFF, dayKey, todayKey, fmtDateLong } = window.CafeData;
   const [period, setPeriod] = useStateR("day");
   const [cat, setCat] = useStateR("all");
   const meta = PERIOD_META[period];
   const f = meta.factor;
   const R = (n) => Math.round(n * f);
 
-  const gross = ledger.reduce((s, e) => s + e.total, 0);
-  const cash = ledger.filter((e) => e.method === "cash").reduce((s, e) => s + e.total, 0);
+  // For the Day view, count only today's (Bangkok) entries so the day
+  // starts/ends correctly. Other periods scale from the full ledger.
+  const base = period === "day" ? ledger.filter((e) => !e.ts || dayKey(e.ts) === todayKey()) : ledger;
+  const daySub = fmtDateLong(new Date());
+
+  const gross = base.reduce((s, e) => s + e.total, 0);
+  const cash = base.filter((e) => e.method === "cash").reduce((s, e) => s + e.total, 0);
   const qr = gross - cash;
   const cashPct = gross ? Math.round((cash / gross) * 100) : 0;
-  const itemsSold = ledger.reduce((s, e) => s + e.items.reduce((a, it) => a + it.qty, 0), 0);
-  const avg = ledger.length ? gross / ledger.length : 0;
+  const itemsSold = base.reduce((s, e) => s + e.items.reduce((a, it) => a + it.qty, 0), 0);
+  const avg = base.length ? gross / base.length : 0;
 
   const catTotals = { drink: 0, food: 0, snack: 0 };
-  ledger.forEach((e) => e.items.forEach((it) => { catTotals[it.group || "food"] += it.price * it.qty; }));
+  base.forEach((e) => e.items.forEach((it) => { catTotals[it.group || "food"] += it.price * it.qty; }));
   const catMax = Math.max(catTotals.drink, catTotals.food, catTotals.snack, 1);
 
-  const byStaff = STAFF.map((s) => { const es = ledger.filter((e) => e.staff === s.id); return { s, n: es.length, total: es.reduce((a, e) => a + e.total, 0) }; }).filter((r) => r.n).sort((a, b) => b.total - a.total);
+  const byStaff = STAFF.map((s) => { const es = base.filter((e) => e.staff === s.id); return { s, n: es.length, total: es.reduce((a, e) => a + e.total, 0) }; }).filter((r) => r.n).sort((a, b) => b.total - a.total);
 
   const itemMap = {};
-  ledger.forEach((e) => e.items.forEach((it) => {
+  base.forEach((e) => e.items.forEach((it) => {
     if (cat !== "all" && (it.group || "food") !== cat) return;
     const key = it.name.split(" · ")[0].replace(/^\+ /, "");
     if (!itemMap[key]) itemMap[key] = { name: key, qty: 0, rev: 0, group: it.group || "food" };
@@ -86,16 +91,16 @@ function ReportsView({ ledger, onToast }) {
   return (
     <div className="reports">
       <div className="view-head">
-        <div><h2>{tR("Summary & export")}</h2><div className="sub">{tR(meta.sub)}</div></div>
+        <div><h2>{tR("Summary & export")}</h2><div className="sub">{period === "day" ? daySub : tR(meta.sub)}</div></div>
         <div className="spacer" />
         <Segmented value={period} onChange={setPeriod} options={PERIODS.map((p) => ({ value: p.value, label: tR(p.label) }))} />
-        <Btn kind="primary" icon="download" onClick={() => { const fn = exportLedgerCSV(ledger, period); onToast(tR("Exported ") + fn); }}>{tR("Export")}</Btn>
+        <Btn kind="primary" icon="download" onClick={() => { const fn = exportLedgerCSV(base, period); onToast(tR("Exported ") + fn); }}>{tR("Export")}</Btn>
       </div>
 
       <div className="rep-body">
         <div className="kpi-row">
           <div className="kpi"><span className="kpi-lbl">{tR("Gross sales")}</span><span className="kpi-val money">{THB(R(gross))}</span></div>
-          <div className="kpi"><span className="kpi-lbl">{tR("Transactions")}</span><span className="kpi-val">{R(ledger.length)}</span></div>
+          <div className="kpi"><span className="kpi-lbl">{tR("Transactions")}</span><span className="kpi-val">{R(base.length)}</span></div>
           <div className="kpi"><span className="kpi-lbl">{tR("Avg ticket")}</span><span className="kpi-val money">{THB(avg)}</span></div>
           <div className="kpi"><span className="kpi-lbl">{tR("Items sold")}</span><span className="kpi-val">{R(itemsSold)}</span></div>
         </div>

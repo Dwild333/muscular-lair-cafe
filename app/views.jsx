@@ -43,18 +43,20 @@ function EntryModal({ entry, onClose, onUpdate }) {
 
 // ---------- Ledger ----------------------------------------------------------
 function LedgerView({ ledger, onUpdate }) {
-  const { THB, STAFF } = window.CafeData;
+  const { THB, STAFF, dayKey, todayKey, fmtDateLong } = window.CafeData;
   const [q, setQ] = useStateV("");
   const [staffF, setStaffF] = useStateV("all");
   const [statusF, setStatusF] = useStateV("all");
   const [open, setOpen] = useStateV(null);
+  const tk = todayKey();
 
   const rows = useMemoV(() => ledger.filter((e) => {
+    if (e.ts && dayKey(e.ts) !== tk) return false; // only today's (Bangkok) entries
     if (staffF !== "all" && e.staff !== staffF) return false;
     if (statusF !== "all" && e.status !== statusF) return false;
     if (q && !(e.customer.toLowerCase().includes(q.toLowerCase()) || itemsSummary(e.items).toLowerCase().includes(q.toLowerCase()))) return false;
     return true;
-  }).slice().reverse(), [ledger, q, staffF, statusF]);
+  }).slice().reverse(), [ledger, q, staffF, statusF, tk]);
 
   const gross = rows.reduce((s, e) => s + e.total, 0);
   const cash = rows.filter((e) => e.method === "cash").reduce((s, e) => s + e.total, 0);
@@ -64,7 +66,7 @@ function LedgerView({ ledger, onUpdate }) {
   return (
     <div className="ledger">
       <div className="view-head">
-        <div><h2>{tV("Today's ledger")}</h2><div className="sub">{tV("Thursday · 5 June 2026")} · {rows.length} {tV("entries")}</div></div>
+        <div><h2>{tV("Today's ledger")}</h2><div className="sub">{fmtDateLong(new Date())} · {rows.length} {tV("entries")}</div></div>
         <div className="spacer" />
         <div className="search"><Icon name="search" size={17} /><input value={q} onChange={(e) => setQ(e.target.value)} placeholder={tV("Search customer or item")} /></div>
       </div>

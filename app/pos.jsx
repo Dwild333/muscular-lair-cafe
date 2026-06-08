@@ -371,7 +371,7 @@ function POSView({ staff, onCommit, savedItems, onSaveItem, customers, catalog, 
     const now = new Date();
     onCommit({
       id: window.CafeData.uid(), staff: staff.id,
-      time: now.toTimeString().slice(0, 5),
+      time: window.CafeData.fmtTime(now),
       customer: customer.trim() || "Walk-in",
       items: cart.map((l) => ({ name: l.name, qty: l.qty, price: l.price, note: l.note, group: l.group })),
       total, method, status,

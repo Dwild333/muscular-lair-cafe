@@ -179,7 +179,7 @@ function App() {
   const [toast, setToast] = useStateA(null);
   const [clock, setClock] = useStateA(new Date());
 
-  useEffectA(() => { const i = setInterval(() => setClock(new Date()), 30000); return () => clearInterval(i); }, []);
+  useEffectA(() => { const i = setInterval(() => setClock(new Date()), 20000); return () => clearInterval(i); }, []);
   const showToast = (m) => { setToast(m); clearTimeout(window.__tt); window.__tt = setTimeout(() => setToast(null), 2400); };
   const showErr = (e) => showToast((e && e.message) ? e.message : tA("Something went wrong"));
 
@@ -320,8 +320,8 @@ function App() {
           <button className={lang === "th" ? "is-on" : ""} onClick={() => setLang("th")}>ไทย</button>
         </div>
         <div className="topbar-date">
-          <div className="d">{clock.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" })}</div>
-          <div className="t money">{clock.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}</div>
+          <div className="d">{window.CafeData.fmtDateShort(clock)}</div>
+          <div className="t money">{window.CafeData.fmtTime(clock)}</div>
         </div>
         {staff && (
           <button className="staff-chip" onClick={() => setPicking(true)}>
